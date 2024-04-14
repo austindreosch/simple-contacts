@@ -1,0 +1,198 @@
+[
+    {
+        "name": "Alice Johnson",
+        "email": "alice.johnson@example.com",
+        "phone": "123-456-7890",
+        "note": "Project Manager",
+        "tags": "manager, project, team-lead, tech"
+    },
+    {
+        "name": "Bob Smith",
+        "email": "bob.smith@example.com",
+        "phone": "987-654-3210",
+        "note": "Senior Developer",
+        "tags": "developer, senior, java, tech"
+    },
+    {
+        "name": "Carol White",
+        "email": "carol.white@example.com",
+        "phone": "456-789-1234",
+        "note": "Marketing Specialist",
+        "tags": "marketing, digital, ads, creative"
+    },
+    {
+        "name": "David Lee",
+        "email": "david.lee@example.com",
+        "phone": "654-321-9876",
+        "note": "UI/UX Designer",
+        "tags": "designer, ui, ux, graphics, creative"
+    },
+    {
+        "name": "Eva Green",
+        "email": "eva.green@example.com",
+        "phone": "321-654-9876",
+        "note": "Data Analyst",
+        "tags": "analyst, data, bi, tech"
+    },
+    {
+        "name": "Frank Moore",
+        "email": "frank.moore@example.com",
+        "phone": "159-753-4862",
+        "note": "Customer Support Lead",
+        "tags": "support, customer, team-lead"
+    },
+    {
+        "name": "Grace Lee",
+        "email": "grace.lee@example.com",
+        "phone": "852-963-7410",
+        "note": "HR Manager",
+        "tags": "hr, manager, team-lead"
+    },
+    {
+        "name": "Henry Adams",
+        "email": "henry.adams@example.com",
+        "phone": "111-222-3333",
+        "note": "Chief Financial Officer",
+        "tags": "cfo, finance, executive"
+    },
+    {
+        "name": "Isabel Clark",
+        "email": "isabel.clark@example.com",
+        "phone": "444-555-6666",
+        "note": "Operations Manager",
+        "tags": "operations, manager, logistics"
+    },
+    {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phone": "777-888-9999",
+        "note": "Freelance Consultant",
+        "tags": "freelance, consultant, strategy"
+    },
+    {
+        "name": "Kathy Brown",
+        "email": "kathy.brown@example.com",
+        "phone": "333-444-5555",
+        "note": "Sales Director",
+        "tags": "sales, director, executive"
+    },
+    {
+        "name": "Liam Nguyen",
+        "email": "liam.nguyen@example.com",
+        "phone": "222-333-4444",
+        "note": "Product Manager",
+        "tags": "product, manager, tech"
+    },
+    {
+        "name": "Mia Wilson",
+        "email": "mia.wilson@example.com",
+        "phone": "555-666-7777",
+        "note": "Research Scientist",
+        "tags": "research, scientist, lab"
+    },
+    {
+        "name": "Noah Martinez",
+        "email": "noah.martinez@example.com",
+        "phone": "666-777-8888",
+        "note": "IT Specialist",
+        "tags": "it, specialist, tech, support"
+    },
+    {
+        "name": "Olivia Lewis",
+        "email": "olivia.lewis@example.com",
+        "phone": "888-999-1111",
+        "note": "Social Media Manager",
+        "tags": "social, media, manager, marketing"
+    },
+    {
+        "name": "Paula Robinson",
+        "email": "paula.robinson@example.com",
+        "phone": "999-111-2222",
+        "note": "Real Estate Agent",
+        "tags": "real-estate, agent, sales"
+    },
+    {
+        "name": "Quinn Johnson",
+        "email": "quinn.johnson@example.com",
+        "phone": "123-321-1234",
+        "note": "Corporate Lawyer",
+        "tags": "lawyer, corporate, legal"
+    },
+    {
+        "name": "Rachel Kim",
+        "email": "rachel.kim@example.com",
+        "phone": "321-321-4321",
+        "note": "Graphic Designer",
+        "tags": "designer, graphics, creative"
+    },
+    {
+        "name": "Steve Watson",
+        "email": "steve.watson@example.com",
+        "phone": "432-432-5432",
+        "note": "Web Developer",
+        "tags": "developer, web, tech"
+    },
+    {
+        "name": "Tina Alexander",
+        "email": "tina.alexander@example.com",
+        "phone": "543-543-6543",
+        "note": "Architect",
+        "tags": "architect, design, construction"
+    },
+    {
+        "name": "Henry Adams",
+        "email": "henry.adams@example.com",
+        "phone": "111-222-3333",
+        "note": "Chief Financial Officer",
+        "tags": "cfo, finance, executive"
+    },
+    {
+        "name": "Isabel Clark",
+        "email": "isabel.clark@example.com",
+        "phone": "444-555-6666",
+        "note": "Operations Manager",
+        "tags": "operations, manager, logistics"
+    },
+    {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phone": "777-888-9999",
+        "note": "Freelance Consultant",
+        "tags": "freelance, consultant, strategy"
+    },
+    {
+        "name": "Kathy Brown",
+        "email": "kathy.brown@example.com",
+        "phone": "333-444-5555",
+        "note": "Sales Director",
+        "tags": "sales, director, executive"
+    },
+    {
+        "name": "Liam Nguyen",
+        "email": "liam.nguyen@example.com",
+        "phone": "222-333-4444",
+        "note": "Product Manager",
+        "tags": "product, manager, tech"
+    },
+    {
+        "name": "Mia Wilson",
+        "email": "mia.wilson@example.com",
+        "phone": "555-666-7777",
+        "note": "Research Scientist",
+        "tags": "research, scientist, lab"
+    },
+    {
+        "name": "Noah Martinez",
+        "email": "noah.martinez@example.com",
+        "phone": "666-777-8888",
+        "note": "IT Specialist",
+        "tags": "it, specialist, tech, support"
+    },
+    {
+        "name": "Olivia Lewis",
+        "email": "olivia.lewis@example.com",
+        "phone": "888-999-1111",
+        "note": "Social Media Manager",
+        "tags": "social, media, manager, marketing"
+    }
+]
