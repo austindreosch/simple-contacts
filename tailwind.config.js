@@ -11,6 +11,10 @@ export default {
         '20': 'repeat(20, minmax(0, 1fr))',
         '24': 'repeat(24, minmax(0, 1fr))',
       },
+      maxWidth: {
+        '9xl': '90rem', 
+        '10xl': '100rem', 
+      }
     },
   },
   plugins: [],

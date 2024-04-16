@@ -6,18 +6,18 @@ import FullCheckmark from '@/assets/full-checkmark.svg';
 <template>
     <div class="flex justify-between items-end">
         <h1 class="text-left text-2xl">Details</h1>
-        <p class="text-xs mb-1">DELETE CONTACT</p>
+        <p class="text-xs mb-1 font-bold">DELETE CONTACT</p>
     </div>
     <div class="bg-gray-200 w-full px-6 py-4 h-86 justify-center space-y-2">
         <!-- NAMES -->
         <div class="grid grid-cols-2 space-x-4 ">
             <div class="col-span-1">
                 <p class="text-left mb-1 ml-2 text-xs">FIRST NAME</p>
-                <input type="text" class="max-w-full ">
+                <input type="text" class="w-full ">
             </div>
             <div class="col-span-1">
                 <p class="text-left mb-1 ml-2 text-xs">LAST NAME</p>
-                <input type="text" class="max-w-full pl-0 pr-0">
+                <input type="text" class="w-full pl-0 pr-0">
             </div>
         </div>
         <!-- EMAIL -->

@@ -1,5 +1,5 @@
 <template>
-    <div class="grid grid-cols-12 space-x-4">
+    <div class="grid grid-cols-12 space-x-4 w-full">
         <div class="col-span-8">
             <ContactBlock />
         </div>
