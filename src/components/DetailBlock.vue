@@ -57,17 +57,17 @@ let selectedContact = computed(() => props.selectedContact || {
                 <div>
                     <div class="flex flex-wrap gap-2 items-center">
                         <!-- Display existing tags -->
-                        <span v-for="tag in selectedContact.tags" :key="tag" class="bg-gray-300 px-2 py-1 rounded-full text-sm">
+                        <span v-for="tag in selectedContact.tags" :key="tag" class="bg-orange-300 text-white px-2 py-1 rounded-md text-sm">
                             {{ tag }}
                         </span>
 
                         <!-- Button to add a new tag -->
-                        <!-- <button @click="showAddTag = true" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">
+                        <button @click="showAddTag = true" class="bg-orange-300 hover:bg-orange-400 text-white font-bold py-0.5 px-2 rounded">
                             +
-                        </button> -->
+                        </button>
 
                         <!-- Pop-up text box to add a new tag -->
-                        <!-- <div v-if="showAddTag" class="absolute bg-white p-3 border rounded shadow-lg mt-2">
+                        <div v-if="showAddTag" class="absolute bg-white p-3 border rounded shadow-lg mt-2">
                             <input v-model="newTag" placeholder="Add tag" class="p-1 border rounded" @keyup.enter="addTag" />
                             <button @click="addTag" class="ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
                                 Add
@@ -75,16 +75,14 @@ let selectedContact = computed(() => props.selectedContact || {
                             <button @click="showAddTag = false" class="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
                                 Cancel
                             </button>
-                        </div> -->
-
+                        </div>
                     </div>
                 </div>
-
             </div>
             <div class="col-span-1">
                 <p class="text-left mb-1 ml-1.5 text-xs">SAVE</p>
-                <button class="bg-blue-500 hover:bg-blue-300 font-bold px-4 rounded h-2/4 w-full">
-                    <FullCheckmark class="mx-auto text-white" />
+                <button class="bg-blue-500 hover:bg-blue-300 font-bold px-4 rounded max-h-300px w-full">
+                    <FullCheckmark class="mx-auto text-white overflow-x-hidden" />
                 </button>
             </div>
         </div>

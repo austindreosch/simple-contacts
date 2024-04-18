@@ -37,10 +37,11 @@ function selectContact(contact) {
     // Unselect if the same contact is clicked again, otherwise select the contact
     if (selectedContactId.value === contact.id) {
         selectedContactId.value = null; 
+        emit('contactSelected', null);
     } else {
         selectedContactId.value = contact.id; 
+        emit('contactSelected', contact);
     }
-    emit('contactSelected', contact);
 }
 
 </script>
@@ -73,8 +74,8 @@ function selectContact(contact) {
                     <td class="col-span-6 text-left pl-1">
                         <div class="flex flex-wrap py-0.5">
                             <template v-for="(tag, index) in contact.tags" :key="tag">
-                                <span v-if="index < 3" class="bg-orange-400 text-white px-1 py-0.6 rounded-full mr-1 mb-0.5">{{ tag }}</span>
-                                <span v-else-if="index === 3" class="bg-orange-400 text-white px-1 py-0.6 rounded-full mr-1">...</span>
+                                <span v-if="index < 3" class="bg-orange-300 text-white px-1 py-0.5 rounded-md mr-1 mb-0.5">{{ tag }}</span>
+                                <span v-else-if="index === 3" class="bg-orange-300 text-white px-1 py-0.5 rounded-md mr-1">...</span>
                             </template>
                         </div>
                     </td>

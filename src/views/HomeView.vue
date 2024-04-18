@@ -19,6 +19,6 @@ const selectedContact = ref(null);
 
 function handleContactSelected(contact) {
     selectedContact.value = contact;
-    console.log('Selected:', contact.email, contact);
+    // console.log('Selected:', contact.email, contact);
 }
 </script>
