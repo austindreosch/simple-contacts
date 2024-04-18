@@ -2,7 +2,7 @@
 import dummyData from '@/assets/dummydata.json';
 import { db } from '@/assets/firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { computed, defineProps, onMounted, ref } from 'vue';
+import { computed, defineEmits, defineProps, onMounted, ref } from 'vue';
 
 const props = defineProps({
   filterTag: String
@@ -30,6 +30,9 @@ const filteredContacts = computed(() => {
   return props.filterTag ? contacts.value.filter(contact => contact.tags.includes(props.filterTag)) : contacts.value;
 });
 
+
+const emit = defineEmits(['contactSelected']);
+
 function selectContact(contact) {
     // Unselect if the same contact is clicked again, otherwise select the contact
     if (selectedContactId.value === contact.id) {
@@ -37,8 +40,7 @@ function selectContact(contact) {
     } else {
         selectedContactId.value = contact.id; 
     }
-    // Optionally emit an event if you need to pass the contact up to a parent component
-    // emit('contactSelected', contact);
+    emit('contactSelected', contact);
 }
 
 </script>
