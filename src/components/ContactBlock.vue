@@ -5,33 +5,30 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { computed, defineEmits, defineProps, onMounted, ref } from 'vue';
 
 const props = defineProps({
-  filterTag: String
+    filterTag: String,
+    contacts: Array
 });
-
-const contacts = ref([]);
+const emit = defineEmits(['contactSelected']);
 const loading = ref(true);
 const selectedContactId = ref(null);
 
-onMounted(async () => {
-    loading.value = true;
-    const q = query(collection(db, 'contacts'));
-    const querySnapshot = await getDocs(q);
-    contacts.value = querySnapshot.docs.map(doc => {
-        return {
-            id: doc.id, 
-            ...doc.data()
-        };
-    });
-    loading.value = false;
-});
+// onMounted(async () => {
+//     loading.value = true;
+//     const q = query(collection(db, 'contacts'));
+//     const querySnapshot = await getDocs(q);
+//     contacts.value = querySnapshot.docs.map(doc => {
+//         return {
+//             id: doc.id, 
+//             ...doc.data()
+//         };
+//     });
+//     loading.value = false;
+// });
 
 const filteredContacts = computed(() => {
   // If a filter tag is passed, filter the contacts, otherwise show all
   return props.filterTag ? contacts.value.filter(contact => contact.tags.includes(props.filterTag)) : contacts.value;
 });
-
-
-const emit = defineEmits(['contactSelected']);
 
 function selectContact(contact) {
     // Unselect if the same contact is clicked again, otherwise select the contact

@@ -1,10 +1,11 @@
 <script setup>
+import { db } from '@/assets/firebase';
 import FullCheckmark from '@/assets/full-checkmark.svg';
-import { computed, defineProps, ref } from 'vue';
+import { deleteDoc, doc } from "firebase/firestore";
+import { computed, defineEmits, defineProps, ref } from 'vue';
 
-const props = defineProps({
-  selectedContact: Object
-});
+const props = defineProps({ selectedContact: Object});
+const emit = defineEmits(['contactUpdated']);
 
 let selectedContact = computed(() => props.selectedContact || {
   firstName: null,
@@ -15,12 +16,18 @@ let selectedContact = computed(() => props.selectedContact || {
   tags: []
 });
 
+const deleteContact = async () => {
+    const contactRef = doc(db, 'contacts', selectedContact.value.id);
+    await deleteDoc(contactRef);
+    emit('contactUpdated');
+};
+
 </script>
 
 <template>
     <div class="flex justify-between items-end">
         <h1 class="text-left text-2xl">Details</h1>
-        <p class="text-xs mb-1 font-bold">DELETE CONTACT</p>
+        <button class="text-xs mb-1 font-bold" @click="deleteContact">DELETE CONTACT</button>
     </div>
     <div class="bg-gray-200 w-full px-6 py-4 h-86 justify-center space-y-2">
         <!-- NAMES -->
