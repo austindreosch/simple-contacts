@@ -30,7 +30,7 @@ function selectContact(contact) {
 </script>
 
 <template>
-    <div class="">
+    <div class="w-full">
         <div class="flex justify-between items-end" >
             <h1 class="text-left text-2xl">Contacts</h1>
             <p class="text-xs mb-1">Currently showing {{ filteredContacts.length || 'N/A' }} of {{ props.contacts.length }} total contacts.</p>

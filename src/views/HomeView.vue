@@ -1,9 +1,9 @@
 <template>
-    <div class="grid grid-cols-12 space-x-4 w-full">
-        <div class="col-span-8">
+    <div class="flex space-x-4 w-full">
+        <div class="">
             <ContactBlock :contacts="contacts" @contactSelected="handleContactSelected"/>
         </div>
-        <div class="col-span-4">
+        <div class="max-w-sm min-w-[320px]">
             <DetailBlock :selectedContact="selectedContact" @contactUpdated="refreshContacts"/>
             <ListsBlock />
         </div>
@@ -42,7 +42,7 @@ async function loadContacts() {
 }
 
 function refreshContacts() {
-    console.log('refreshing contacts', contacts.value);
+    console.log('refreshing contacts', contacts);
     loadContacts();
 }
 
