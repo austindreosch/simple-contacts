@@ -21,7 +21,6 @@ const deleteContact = async () => {
     await deleteDoc(contactRef);
     emit('contactUpdated');
 };
-
 </script>
 
 <template>

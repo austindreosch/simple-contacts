@@ -14,6 +14,11 @@ export default {
       maxWidth: {
         '9xl': '90rem', 
         '10xl': '100rem', 
+        '11xl': '110rem',
+        '12xl': '120rem',
+        '13xl': '130rem',
+        '14xl': '140rem',
+        '15xl': '150rem',
       }
     },
   },

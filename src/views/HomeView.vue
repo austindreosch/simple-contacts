@@ -42,6 +42,7 @@ async function loadContacts() {
 }
 
 function refreshContacts() {
+    console.log('refreshing contacts', contacts.value);
     loadContacts();
 }
 
