@@ -5,8 +5,8 @@
 
 <template>
   <div>
-    <nav class="p-4 flex justify-between fixed pt-10 pb-7 top-0 left-0 right-0 bg-orange-200 z-10    px-48">
-      <div class="font-outfit text-black-800 flex space-x-2 items-center">
+    <nav class="p-4 flex justify-center fixed pt-10 pb-7 top-0 left-0 right-0 bg-orange-200 z-10">
+      <div class="font-outfit text-black-800 flex space-x-2 items-center pr-20">
         <h1 class="text-4xl font-semibold">simple</h1>
         <span class="mt-2 pl-0.5">
           <svg class="w-8 h-8 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -15,7 +15,7 @@
         </span>
         <h1 class="text-4xl font-semibold ">contacts</h1>
       </div>
-      <div class="flex justify-between space-x-4">
+      <div class="flex justify-between space-x-4 pt-1">
         <router-link class="px-4 py-2 bg-blue-400 text-white rounded hover:bg-white hover:text-black" to="/">Home</router-link>
         <router-link class="px-4 py-2 bg-blue-400 text-white rounded hover:bg-white hover:text-black" to="/add">Add Invidual Contact</router-link>
         <router-link class="px-4 py-2 bg-blue-400 text-white rounded hover:bg-white hover:text-black" to="/import">Import Contacts</router-link>

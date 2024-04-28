@@ -26,6 +26,13 @@ const dummyLists = [
         dateAdded: '09-25-2023'
     }
 ];
+
+// Load lists from the database
+async function loadLists() {
+    // Load lists from the database
+}
+
+
 </script>
 
 <template>

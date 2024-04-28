@@ -1,36 +1,25 @@
 <script setup>
+import { db } from '@/assets/firebase';
 import FullCheckmark from '@/assets/full-checkmark.svg';
 import Upload from '@/assets/upload.svg';
+import { addDoc, collection } from 'firebase/firestore';
+import Papa from 'papaparse';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 //To be replaced later.
 const user = { id: 'user1', email: 'john@doe.com' }
-const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
+const updateDuplicatesFromCSV = ref(false);
 
+const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
 
-function importCSV(file) {
-    // First Name, Last Name, Email, Note, Phone, Tags
 
-    Papa.parse(file, {
-        header: true, // Treat the first row as headers
-        complete: function(results) {
-            const processedData = processData(results.data);
-
-            console.log(processedData);
-            // Save to database
-            // Add these contacts to a list?
-            // Emit an event to refresh the contacts list
-            
-
-        },
-        error: function(error) {
-            console.error('Error parsing CSV:', error);
-        }
-    });
-}
-
-const processData = (csvData) => {
-    const headers = csvData[0];
+const processData = async (csvData, headers) => {
+    /* -----------------------------------------------------------
+    *  Process the CSV data to extract the relevant columns
+    ----------------------------------------------------------- */
     // Email    
     const emailRegex = /email|e[-\s]?mail/i;
     const emailIndex = headers.findIndex(header => emailRegex.test(header));
@@ -42,7 +31,7 @@ const processData = (csvData) => {
     let firstNameIndex, lastNameIndex;
     if (nameColumnIndex !== -1) { // Name column found
         // Check if there's only one name column
-        if (nameColumnIndex !== headers.lastIndexOf(header)) {
+        if (nameColumnIndex !== headers.lastIndexOf(headers)) {
             // Treat as separate first and last name columns
             firstNameIndex = headers.findIndex(header => /first\s*name/i.test(header));
             lastNameIndex = headers.findIndex(header => /last\s*name/i.test(header));
@@ -51,27 +40,76 @@ const processData = (csvData) => {
             const fullName = headers[nameColumnIndex];
             const [firstName, lastName] = fullName.split(/\s+/);
             if (firstName && lastName) {
-                // Set the indices for first and last name accordingly
                 firstNameIndex = nameColumnIndex;
                 lastNameIndex = -1; // Not needed if it's a full name
             }
         }
     }
     // Note and Tags
-    const noteIndex = headers.indexOf('Note');
-    const tagsIndex = headers.indexOf('Tags');
+    const noteRegex = /note|remarks|comment/i;
+    const noteIndex = headers.findIndex(header => noteRegex.test(header));
+    const tagsRegex = /tags|labels|categories/i;
+    const tagsIndex = headers.findIndex(header => tagsRegex.test(header));
 
+    const processedValues = csvData.map(row => {
+        const emailHeader = headers[emailIndex];
+        const phoneHeader = headers[phoneIndex];
+        const firstNameHeader = headers[firstNameIndex];
+        const lastNameHeader = headers[lastNameIndex];
+        const noteHeader = headers[noteIndex];
+        const tagsHeader = headers[tagsIndex];
 
-    const processedValues = csvData.slice(1).map(row => ({
-        email: emailIndex !== -1 ? row[emailIndex] : '',
-        phone: phoneIndex !== -1 ? row[phoneIndex] : '',
-        firstName: firstNameIndex !== -1 ? row[firstNameIndex] : '',
-        lastName: lastNameIndex !== -1 ? row[lastNameIndex] : '',
-        note: noteIndex !== -1 ? row[noteIndex] : '',
-        tags: tagsIndex !== -1 ? row[tagsIndex] : ''
-    }));
+        return {
+            email: emailHeader ? row[emailHeader] : '',
+            phone: phoneHeader ? row[phoneHeader] : '',
+            firstName: firstNameHeader ? row[firstNameHeader] : '',
+            lastName: lastNameHeader ? row[lastNameHeader] : '',
+            note: noteHeader ? row[noteHeader] : '',
+            tags: tagsHeader ? row[tagsHeader] : ''
+        };
+    });
 
     return processedValues;
+}
+
+function importCSV(event) {
+    // First Name, Last Name, Email, Note, Phone, Tags
+    const file = event.target.files[0];
+
+    Papa.parse(file, {
+        header: true,      
+        complete: async function(results) {
+
+            // console.log('Raw File Results:', results.data);
+            const headers = results.meta.fields;
+            const processedData = await processData(results.data, headers);
+            console.log('processedData:', processedData);
+            // Add these contacts to a list?
+
+            // console.log('db', db)
+            processedData.forEach(async (contact) => {
+
+                //if updateDuplicatesFromCSV is true
+                //if contact with same email exists, update the rest with no info
+
+                // else addDoc
+                const docRef = await addDoc(collection(db, "contacts"), {
+                    userId: user.id,
+                    email: contact.email,
+                    phone: contact.phone,
+                    firstName: contact.firstName,
+                    lastName: contact.lastName,
+                    note: contact.note,
+                    tags: contact.tags
+                });
+            });
+
+            // router.push('/');
+        },
+        error: function(error) {
+            console.error('Error parsing CSV:', error);
+        }
+    });
 }
 
 </script>
@@ -89,10 +127,17 @@ const processData = (csvData) => {
             <p>
                 If you'd like to get started testing the app you can also <a :href="dummyDataCSV" class="text-blue-500">download our sample contacts.</a>
             </p>
+
+            <p>
+                If the case of duplicate emails, the existing contact will be updated with the new information.
+            </p>
             <div class="col-span-1">
-                <button class="bg-blue-500 hover:bg-blue-300 font-bold px-4 rounded h-2/4 w-2/4">
-                    <Upload class="mx-auto text-white "/>
-                </button>
+                <label for="file-upload" class="relative cursor-pointer flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <input id="file-upload" name="file-upload" type="file" class="sr-only" @change="importCSV">
+                    <Upload class="mx-auto"/>
+                    <!-- <span>Upload a file</span> -->
+                </label>
+
             </div>
         </div>
     </div>

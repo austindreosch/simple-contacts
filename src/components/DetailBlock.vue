@@ -68,20 +68,10 @@ const deleteContact = async () => {
                         </span>
 
                         <!-- Button to add a new tag -->
-                        <button @click="showAddTag = true" class="bg-orange-300 hover:bg-orange-400 text-white font-bold py-0.5 px-2 rounded">
+                        <button  class="bg-orange-300 hover:bg-orange-400 text-white font-bold py-0.5 px-2 rounded">
                             +
                         </button>
 
-                        <!-- Pop-up text box to add a new tag -->
-                        <div v-if="showAddTag" class="absolute bg-white p-3 border rounded shadow-lg mt-2">
-                            <input v-model="newTag" placeholder="Add tag" class="p-1 border rounded" @keyup.enter="addTag" />
-                            <button @click="addTag" class="ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
-                                Add
-                            </button>
-                            <button @click="showAddTag = false" class="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
-                                Cancel
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>

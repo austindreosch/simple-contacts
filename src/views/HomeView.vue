@@ -1,15 +1,3 @@
-<template>
-    <div class="flex space-x-4 w-full">
-        <div class="">
-            <ContactBlock :contacts="contacts" @contactSelected="handleContactSelected"/>
-        </div>
-        <div class="max-w-sm min-w-[320px]">
-            <DetailBlock :selectedContact="selectedContact" @contactUpdated="refreshContacts"/>
-            <ListsBlock />
-        </div>
-    </div>
-</template>
-
 <script setup>
 import { db } from '@/assets/firebase';
 import ContactBlock from '@/components/ContactBlock.vue';
@@ -21,14 +9,9 @@ import { onMounted, ref } from 'vue';
 const contacts = ref([]);
 const selectedContact = ref(null);
 
-function handleContactSelected(contact) {
-    selectedContact.value = contact;
-}
-
-
 
 /* -----------------------------------------------------------
-  USER CONTACTS MANAGED IN PARENT COMPONENT
+USER CONTACTS MANAGED IN PARENT COMPONENT
 ----------------------------------------------------------- */
 async function loadContacts() {
     const q = query(collection(db, 'contacts'));
@@ -38,7 +21,11 @@ async function loadContacts() {
             id: doc.id, 
             ...doc.data()
         };
-    });
+    })
+}
+
+function handleContactSelected(contact) {
+    selectedContact.value = contact;
 }
 
 function refreshContacts() {
@@ -51,3 +38,16 @@ onMounted(async () => {
 });
 
 </script>
+
+
+<template>
+    <div class="flex space-x-4 w-full">
+        <div class="">
+            <ContactBlock :contacts="contacts" @contactSelected="handleContactSelected"/>
+        </div>
+        <div class="max-w-sm min-w-[320px]">
+            <DetailBlock :selectedContact="selectedContact" @contactUpdated="refreshContacts"/>
+            <ListsBlock />
+        </div>
+    </div>
+</template>
