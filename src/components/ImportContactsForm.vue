@@ -10,7 +10,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 //To be replaced later.
 const user = { id: 'user1', email: 'john@doe.com' }
-const updateDuplicatesFromCSV = ref(false);
+const updateDuplicatesFromCSV = ref(null);
 
 const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
@@ -115,22 +115,32 @@ function importCSV(event) {
 </script>
 
 <template>
-    <div>
+    <div class="max-w-lg mx-auto justify-center">
         <div class="flex justify-between items-end">
             <h1 class="text-left text-2xl">Import CSV</h1>
             <!-- <p class="text-xs mb-1 font-bold">DELETE CONTACT</p> -->
         </div>
-        <div class="bg-gray-200 w-full px-6 py-8 h-86 space-y-8 rounded-md h-70">
-            <p class="font-bold">
+        <div class="bg-gray-200 w-full px-6 py-8 h-86 space-y-6 rounded-md h-70">
+            <p class="">
                 To import your contacts, press the button below to upload your files in CSV format.
             </p>
             <p>
                 If you'd like to get started testing the app you can also <a :href="dummyDataCSV" class="text-blue-500">download our sample contacts.</a>
             </p>
-
-            <p>
-                If the case of duplicate emails, the existing contact will be updated with the new information.
-            </p>
+            
+            <div class="">
+                <label class="font-bold"> In the case of duplicate contacts, how would you like to handle importing?</label>
+                <div class="flex justify-center space-x-6">
+                    <div>
+                        <input type="radio" id="update" value="update" v-model="actionOnDuplicate" class="mr-1">
+                        <label for="update">Update contact from import data.</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="replace" value="replace" v-model="actionOnDuplicate" class="mr-1">
+                        <label for="replace">Keep previous contact data.</label>
+                    </div>
+                </div>
+            </div>
             <div class="col-span-1">
                 <label for="file-upload" class="relative cursor-pointer flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                     <input id="file-upload" name="file-upload" type="file" class="sr-only" @change="importCSV">

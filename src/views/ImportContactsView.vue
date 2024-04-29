@@ -1,5 +1,5 @@
 <template>
-    <div class="flex max-w-sm fixed top-40">
+    <div class="">
         <div class=""><ImportContactsForm /></div>
     </div>
 </template>
