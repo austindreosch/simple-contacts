@@ -3,9 +3,10 @@ import { db } from '@/assets/firebase';
 import ContactBlock from '@/components/ContactBlock.vue';
 import DetailBlock from '@/components/DetailBlock.vue';
 import ListsBlock from '@/components/ListsBlock.vue';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { onMounted, ref } from 'vue';
 
+const user = { id: 'user1' } //to be replaced later
 const contacts = ref([]);
 const selectedContact = ref(null);
 
@@ -14,7 +15,7 @@ const selectedContact = ref(null);
 USER CONTACTS MANAGED IN PARENT COMPONENT
 ----------------------------------------------------------- */
 async function loadContacts() {
-    const q = query(collection(db, 'contacts'));
+    const q = query(collection(db, 'contacts'), where('userId', '==', user.id));
     const querySnapshot = await getDocs(q);
     contacts.value = querySnapshot.docs.map(doc => {
         return {

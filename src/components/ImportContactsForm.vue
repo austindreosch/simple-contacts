@@ -2,19 +2,21 @@
 import { db } from '@/assets/firebase';
 import FullCheckmark from '@/assets/full-checkmark.svg';
 import Upload from '@/assets/upload.svg';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, query, updateDoc } from 'firebase/firestore';
 import Papa from 'papaparse';
-import { ref } from 'vue';
+import { defineProps, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 //To be replaced later.
-const user = { id: 'user1', email: 'john@doe.com' }
+const user = { id: 'user1' }
+const props = defineProps({ contacts: Array });
+
 const updateDuplicatesFromCSV = ref(null);
+const showAlert = ref(false);
 
 const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
-
 
 const processData = async (csvData, headers) => {
     /* -----------------------------------------------------------
@@ -59,13 +61,15 @@ const processData = async (csvData, headers) => {
         const noteHeader = headers[noteIndex];
         const tagsHeader = headers[tagsIndex];
 
+        console.log('row:', row[tagsHeader]);
         return {
             email: emailHeader ? row[emailHeader] : '',
             phone: phoneHeader ? row[phoneHeader] : '',
             firstName: firstNameHeader ? row[firstNameHeader] : '',
             lastName: lastNameHeader ? row[lastNameHeader] : '',
             note: noteHeader ? row[noteHeader] : '',
-            tags: tagsHeader ? row[tagsHeader] : ''
+            tags: tagsIndex !== -1 ? row[headers[tagsIndex]].split(',').map(tag => tag.trim()) : []
+
         };
     });
 
@@ -73,38 +77,58 @@ const processData = async (csvData, headers) => {
 }
 
 function importCSV(event) {
+
     // First Name, Last Name, Email, Note, Phone, Tags
     const file = event.target.files[0];
 
     Papa.parse(file, {
         header: true,      
         complete: async function(results) {
-
-            // console.log('Raw File Results:', results.data);
             const headers = results.meta.fields;
             const processedData = await processData(results.data, headers);
             console.log('processedData:', processedData);
-            // Add these contacts to a list?
 
-            // console.log('db', db)
+            const existingContacts = new Map(props.contacts.map(contact => [contact.email, contact.id]));
+
             processedData.forEach(async (contact) => {
+                //check if contact with same email exists
+                // if exists, use conditional logic to update data or not
 
-                //if updateDuplicatesFromCSV is true
+                //Handle duplicates 
+                if (existingContacts.has(contact.email)){
+                    //if updateDuplicatesFromCSV is true, update contacts at all data points except email
+                    if (updateDuplicatesFromCSV.value === true) {
+                        //update contact all over dat points except with same email
+                        const contactId = existingContacts.get(contact.email);
+                        const contactRef = doc(db, 'contacts', contactId);
+                        await updateDoc(contactRef, {
+                            userId: user.id,
+                            phone: contact.phone,
+                            firstName: contact.firstName,
+                            lastName: contact.lastName,
+                            note: contact.note,
+                            tags: contact.tags
+                        });
+                        
+                    } 
+                } else {
+                    //Add new contact
+                    const docRef = await addDoc(collection(db, "contacts"), {
+                        userId: user.id,
+                        email: contact.email,
+                        phone: contact.phone,
+                        firstName: contact.firstName,
+                        lastName: contact.lastName,
+                        note: contact.note,
+                        tags: contact.tags
+                    });
+                }
+            });
                 //if contact with same email exists, update the rest with no info
 
                 // else addDoc
-                const docRef = await addDoc(collection(db, "contacts"), {
-                    userId: user.id,
-                    email: contact.email,
-                    phone: contact.phone,
-                    firstName: contact.firstName,
-                    lastName: contact.lastName,
-                    note: contact.note,
-                    tags: contact.tags
-                });
-            });
 
-            // router.push('/');
+            router.push('/');
         },
         error: function(error) {
             console.error('Error parsing CSV:', error);
@@ -112,43 +136,60 @@ function importCSV(event) {
     });
 }
 
+function checkSelection() {
+    if (updateDuplicatesFromCSV.value === null) {
+        showAlert.value = true;
+    } else {
+        showAlert.value = false;
+    }
+}
+
+
+
 </script>
 
 <template>
-    <div class="max-w-lg mx-auto justify-center">
+    <div class="max-w-xl mx-auto justify-center">
         <div class="flex justify-between items-end">
             <h1 class="text-left text-2xl">Import CSV</h1>
-            <!-- <p class="text-xs mb-1 font-bold">DELETE CONTACT</p> -->
+            <!-- <p>Show Alert? {{ String(showAlert) }}</p> -->
+
         </div>
         <div class="bg-gray-200 w-full px-6 py-8 h-86 space-y-6 rounded-md h-70">
             <p class="">
                 To import your contacts, press the button below to upload your files in CSV format.
             </p>
-            <p>
-                If you'd like to get started testing the app you can also <a :href="dummyDataCSV" class="text-blue-500">download our sample contacts.</a>
+            <p class="">
+                You can also <a :href="dummyDataCSV" class="text-orange-500">download our sample contacts</a> to test the app.
             </p>
             
-            <div class="">
-                <label class="font-bold"> In the case of duplicate contacts, how would you like to handle importing?</label>
-                <div class="flex justify-center space-x-6">
+            <div class="border border-gray-300 p-2 rounded-md bg-gray-100">
+                <div class="bg-blue-400 rounded-md px-4 py-4 mb-3">
+                    <p class="font-bold text-white "> When importing a contact with an email that is already assigned to a contact previously imported, how would you like to manage the import?</p>
+                </div>
+                <div class="flex justify-center space-x-4">
                     <div>
-                        <input type="radio" id="update" value="update" v-model="actionOnDuplicate" class="mr-1">
-                        <label for="update">Update contact from import data.</label>
+                        <input type="radio" id="update" value=true class="mr-1" v-model="updateDuplicatesFromCSV">
+                        <label for="update" class="">Update contact from import data.</label>
                     </div>
                     <div>
-                        <input type="radio" id="replace" value="replace" v-model="actionOnDuplicate" class="mr-1">
-                        <label for="replace">Keep previous contact data.</label>
+                        <input type="radio" id="replace" value=false class="mr-1" v-model="updateDuplicatesFromCSV">
+                        <label for="replace" class="">Keep previous contact data.</label>
                     </div>
                 </div>
             </div>
             <div class="col-span-1">
-                <label for="file-upload" class="relative cursor-pointer flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                    <input id="file-upload" name="file-upload" type="file" class="sr-only" @change="importCSV">
-                    <Upload class="mx-auto"/>
-                    <!-- <span>Upload a file</span> -->
-                </label>
+                <!-- Alert -->
 
+                <!-- Upload Button -->
+                <label for="file-upload" class="relative cursor-pointer flex items-center justify-center px-4 py-2 border border-orange-300 text-sm font-medium rounded-md text-gray-700 bg-orange-200 hover:bg-orange-100" @click="checkSelection">
+                    <input id="file-upload" name="file-upload" type="file" class="sr-only" :disabled="showAlert" @change="importCSV">
+                    <Upload class="mx-auto text-orange-900"/>
+                </label>
             </div>
+        </div>
+        <div v-if="showAlert" class="alert alert-danger bg-red-400 p-3 my-4 rounded text-white text-lg">
+            Please choose an import rule before uploading.
         </div>
     </div>
 </template>
