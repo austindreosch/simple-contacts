@@ -3,9 +3,13 @@ import { db } from '@/assets/firebase';
 import FullCheckmark from '@/assets/full-checkmark.svg';
 import Upload from '@/assets/upload.svg';
 import { addDoc, collection, doc, query, updateDoc } from 'firebase/firestore';
+import { AsYouType, format, isValidNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
+
 import Papa from 'papaparse';
+import validator from 'validator';
 import { defineProps, ref } from 'vue';
 import { useRouter } from 'vue-router';
+
 
 const router = useRouter();
 //To be replaced later.
@@ -19,9 +23,15 @@ const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
 
 const processData = async (csvData, headers) => {
-    /* -----------------------------------------------------------
-    *  Process the CSV data to extract the relevant columns
-    ----------------------------------------------------------- */
+
+    const errors = {
+        missingNames: [],
+        missingEmails: [],
+        missingPhones: [],
+    }
+    /* --------------------------------------------------------------
+    *  Processing the headers text to structure correct columns
+    --------------------------------------------------------------- */
     // Email    
     const emailRegex = /email|e[-\s]?mail/i;
     const emailIndex = headers.findIndex(header => emailRegex.test(header));
@@ -32,15 +42,28 @@ const processData = async (csvData, headers) => {
     const nameColumnIndex = headers.findIndex(header => /name/i.test(header));
     let firstNameIndex, lastNameIndex;
     if (nameColumnIndex !== -1) { // Name column found
-        // Check if there's only one name column
-        if (nameColumnIndex !== headers.lastIndexOf(headers)) {
+        const fullNameHeader = headers[nameColumnIndex];
+
+        // Is the name column split into first and last name columns?
+        if (nameColumnIndex !== headers.lastIndexOf(header => /name/i.test(header))) {
             // Treat as separate first and last name columns
             firstNameIndex = headers.findIndex(header => /first\s*name/i.test(header));
             lastNameIndex = headers.findIndex(header => /last\s*name/i.test(header));
         } else {
             // Treat as a single full name column, assuming the full name is in the format "First Last"
-            const fullName = headers[nameColumnIndex];
-            const [firstName, lastName] = fullName.split(/\s+/);
+            const fullName = row[fullNameHeader];
+            const nameParts = fullName.split(/\s+/);
+            let firstName = nameParts[0];
+            let lastName = nameParts.slice(1).join(' '); // Join remaining parts as the last name
+
+            // Check if the last part is a known suffix like "Jr."
+            const suffixes = ["Junior","Senior", "Jr.", "Jr", "Sr", "Sr.", "Snr.", "II", "III", "IV", "V", "VI", "VII"];
+            const additionalNamePart = nameParts[nameParts.length - 1];
+            if (suffixes.includes(additionalNamePart)) {
+                firstName += ' ' + additionalNamePart; // Append the suffix to the first name
+                lastName = nameParts.slice(1, -1).join(' ');
+            }
+
             if (firstName && lastName) {
                 firstNameIndex = nameColumnIndex;
                 lastNameIndex = -1; // Not needed if it's a full name
@@ -53,24 +76,42 @@ const processData = async (csvData, headers) => {
     const tagsRegex = /tags|labels|categories/i;
     const tagsIndex = headers.findIndex(header => tagsRegex.test(header));
 
+
+    /* -----------------------------------------------------------
+    *  Validate and structure the data for each contact
+    ----------------------------------------------------------- */
+
     const processedValues = csvData.map(row => {
+        //Gather the column index values for each header
         const emailHeader = headers[emailIndex];
         const phoneHeader = headers[phoneIndex];
         const firstNameHeader = headers[firstNameIndex];
         const lastNameHeader = headers[lastNameIndex];
         const noteHeader = headers[noteIndex];
-        const tagsHeader = headers[tagsIndex];
+        const tagsHeader = headers[tagsIndex]; // console.log('row:', row[tagsHeader]);
 
-        console.log('row:', row[tagsHeader]);
-        return {
-            email: emailHeader ? row[emailHeader] : '',
-            phone: phoneHeader ? row[phoneHeader] : '',
-            firstName: firstNameHeader ? row[firstNameHeader] : '',
-            lastName: lastNameHeader ? row[lastNameHeader] : '',
-            note: noteHeader ? row[noteHeader] : '',
-            tags: tagsIndex !== -1 ? row[headers[tagsIndex]].split(',').map(tag => tag.trim()) : []
+        //-----Validate fields and assign returned data structure-----
+        // Email
+        const email = emailHeader ? row[emailHeader] : '';
+        if (!validator.isEmail(email)) {
+            errors.missingEmails.push(row);
+        }
+        //Phone
+        const phone = phoneIndex !== -1 ? row[phoneHeader] : '';
+        if (!isValidNumber(phone)) {
+            errors.missingPhones.push(row);
+        } else {
+            const phoneNumber = parsePhoneNumberFromString(phone);
+            phone = phoneNumber.formatInternational(); 
+        }
+        //Names, Note & Tags
+        const firstName = firstNameHeader ? row[firstNameHeader] : '';
+        const lastName = lastNameHeader ? row[lastNameHeader] : '';
+        const note = noteIndex !== -1 ? row[noteHeader] : '';
+        const tags = tagsIndex !== -1 ? row[tagsHeader].split(',').map(tag => tag.trim()) : [];
 
-        };
+
+        return { email, phone, firstName, lastName, note, tags };
     });
 
     return processedValues;
@@ -90,17 +131,15 @@ function importCSV(event) {
 
             const existingContacts = new Map(props.contacts.map(contact => [contact.email, contact.id]));
 
-            processedData.forEach(async (contact) => {
-                //check if contact with same email exists
-                // if exists, use conditional logic to update data or not
+            console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
 
-                //Handle duplicates 
+            processedData.forEach(async (contact) => {
+                //check if contact with same email exists - if so, use conditional logic to update data or not
                 if (existingContacts.has(contact.email)){
                     //if updateDuplicatesFromCSV is true, update contacts at all data points except email
                     if (updateDuplicatesFromCSV.value === true) {
-                        //update contact all over dat points except with same email
-                        const contactId = existingContacts.get(contact.email);
-                        const contactRef = doc(db, 'contacts', contactId);
+                        // const contactId = existingContacts.get(contact.email);
+                        const contactRef = doc(db, 'contacts', contact.id;
                         await updateDoc(contactRef, {
                             userId: user.id,
                             phone: contact.phone,
@@ -109,8 +148,11 @@ function importCSV(event) {
                             note: contact.note,
                             tags: contact.tags
                         });
-                        
-                    } 
+                        console.log('Contact updated:', contact.id);
+                    } else {
+                        //Do nothing
+                        console.log('Contact found but not updated:', contact.id);
+                    }   
                 } else {
                     //Add new contact
                     const docRef = await addDoc(collection(db, "contacts"), {
@@ -122,6 +164,7 @@ function importCSV(event) {
                         note: contact.note,
                         tags: contact.tags
                     });
+                    console.log('Contact added with ID:', docRef.id);
                 }
             });
                 //if contact with same email exists, update the rest with no info
