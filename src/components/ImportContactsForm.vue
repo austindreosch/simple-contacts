@@ -187,9 +187,11 @@ function importCSV(event) {
                     //if updateDuplicatesFromCSV is true, update contacts at all data points except email
                     if (updateDuplicatesFromCSV.value === true) {
                         // const contactId = existingContacts.get(contact.email);
-                        const contactRef = doc(db, 'contacts', contact.id);
-5743fb8
-ntact.firstName,
+                        const contactRef = doc(db, 'contacts', contact.id)
+                        await updateDoc(contactRef, {
+                            userId: user.id,
+                            phone: contact.phone,
+                            firstName: contact.firstName,
                             lastName: contact.lastName,
                             note: contact.note,
                             tags: contact.tags
