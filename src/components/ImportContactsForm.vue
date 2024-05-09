@@ -19,16 +19,14 @@ const props = defineProps({ contacts: Array });
 const updateDuplicatesFromCSV = ref(null);
 const showAlert = ref(false);
 
+//will use these for list selection logic
 const newListName = ref(''); // Initialize newListName to an empty string
-// const selectedList = ref(''); // Initialize selectedList to an empty string
 const selectedList = ref('Click to select...')
-
 watch(newListName, () => {
   if (newListName.value) {
     selectedList.value = ''; // Reset selectedList when newListName changes
   }
 });
-
 watch(selectedList, () => {
   if (selectedList.value) {
     newListName.value = ''; // Reset newListName when selectedList changes
@@ -280,7 +278,7 @@ function checkSelection() {
                         <input type="text" id="addList" class="mr-1 border rounded-sm border-gray-500 ">
                     </div>
                     <div>
-                        <label for="selectList" class="">Select  list:</label>
+                        <label for="selectList" class="">Add to existing list:</label>
                         <select id="selectList" v-model="selectedList" class="mr-1 border rounded-sm border-gray-500">
                             <option  >Click to select...</option>
                             <option v-for="list in dummyLists" :key="list.id" :value="list.id">{{ list.name }}</option>
