@@ -7,7 +7,7 @@ import { AsYouType, format, isValidNumber, parsePhoneNumberFromString } from 'li
 
 import Papa from 'papaparse';
 import validator from 'validator';
-import { defineProps, ref } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 
@@ -19,8 +19,56 @@ const props = defineProps({ contacts: Array });
 const updateDuplicatesFromCSV = ref(null);
 const showAlert = ref(false);
 
+const newListName = ref(''); // Initialize newListName to an empty string
+// const selectedList = ref(''); // Initialize selectedList to an empty string
+const selectedList = ref('Click to select...')
+
+watch(newListName, () => {
+  if (newListName.value) {
+    selectedList.value = ''; // Reset selectedList when newListName changes
+  }
+});
+
+watch(selectedList, () => {
+  if (selectedList.value) {
+    newListName.value = ''; // Reset newListName when selectedList changes
+  }
+});
+
 const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
+
+const dummyLists = [
+    {
+        id: 1,
+        name: 'Family',
+        totalContactCount: 10,
+        dateAdded: '09-01-2023'
+    },
+    {
+        id: 2,
+        name: 'Friends',
+        totalContactCount: 24,
+        dateAdded: '09-05-2023'
+    },
+    {
+        id: 3,
+        name: 'Work ',
+        totalContactCount: 87,
+        dateAdded: '09-10-2023'
+    },
+    {
+        id: 4,
+        name: 'Luxury Realtor List 4/1/23',
+        totalContactCount: 1002,
+        dateAdded: '09-25-2023',
+        contacts : [
+            {id: 1, dateAddedToList: '09-25-2023'},
+        ]
+    }
+];
+
+
 
 const processData = async (csvData, headers) => {
 
@@ -69,6 +117,8 @@ const processData = async (csvData, headers) => {
                 lastNameIndex = -1; // Not needed if it's a full name
             }
         }
+    } else {
+        errors.missingNames.push(row);
     }
     // Note and Tags
     const noteRegex = /note|remarks|comment/i;
@@ -137,7 +187,7 @@ function importCSV(event) {
                     //if updateDuplicatesFromCSV is true, update contacts at all data points except email
                     if (updateDuplicatesFromCSV.value === true) {
                         // const contactId = existingContacts.get(contact.email);
-                        const contactRef = doc(db, 'contacts', contact.id;
+                        const contactRef = doc(db, 'contacts', contact.id);
                         await updateDoc(contactRef, {
                             userId: user.id,
                             phone: contact.phone,
@@ -203,7 +253,7 @@ function checkSelection() {
             <p class="">
                 You can also <a :href="dummyDataCSV" class="text-orange-500">download our sample contacts</a> to test the app.
             </p>
-            
+            <!-- Question 1 -->
             <div class="border border-gray-300 p-2 rounded-md bg-gray-100">
                 <div class="bg-blue-400 rounded-md px-4 py-4 mb-3">
                     <p class="font-bold text-white "> When importing a contact with an email that is already assigned to a contact previously imported, how would you like to manage the import?</p>
@@ -216,6 +266,25 @@ function checkSelection() {
                     <div>
                         <input type="radio" id="replace" value=false class="mr-1" v-model="updateDuplicatesFromCSV">
                         <label for="replace" class="">Keep previous contact data.</label>
+                    </div>
+                </div>
+            </div>
+            <!-- Question 2 -->
+            <div class="border border-gray-300 p-2 rounded-md bg-gray-100">
+                <div class="bg-blue-400 rounded-md px-4 py-4 mb-3">
+                    <p class="font-bold text-white "> Would you like to add your imports to a contact list?</p>
+                </div>
+                <div class="flex justify-center space-x-4">
+                    <div>
+                        <label for="addList" class="text-left">Add to new list:</label>
+                        <input type="text" id="addList" class="mr-1 border rounded-sm border-gray-500 ">
+                    </div>
+                    <div>
+                        <label for="selectList" class="">Select  list:</label>
+                        <select id="selectList" v-model="selectedList" class="mr-1 border rounded-sm border-gray-500">
+                            <option  >Click to select...</option>
+                            <option v-for="list in dummyLists" :key="list.id" :value="list.id">{{ list.name }}</option>
+                        </select>
                     </div>
                 </div>
             </div>

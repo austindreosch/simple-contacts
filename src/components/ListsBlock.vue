@@ -21,11 +21,19 @@ const dummyLists = [
     },
     {
         id: 4,
-        name: 'Neighbors',
-        totalContactCount: 12,
+        name: 'Luxury Realtor List 4/1/23',
+        totalContactCount: 1002,
         dateAdded: '09-25-2023'
     }
 ];
+
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear().toString().substr(-2);
+    const month = date.getMonth() + 1; 
+    const day = date.getDate();
+    return `${month}/${day}/${year}`;
+};
 
 // Load lists from the database
 async function loadLists() {
@@ -46,15 +54,16 @@ async function loadLists() {
         -------------------------->
         <div v-for="list in dummyLists" :key="list.id">
             <div class="h-12 flex-grow bg-blue-200  rounded border border-blue-300 mt-1">
-                <div class="flex justify-between items-center h-full px-4">
-                    <div>
-                        <h2 class="text-lg font-semibold">{{ list.name }}</h2>
+                <div class="grid grid-cols-20 justify-between items-center h-full px-1 pl-2">
+                    <div class="col-span-12 text-left">
+                        <h2 class="text-sm font-semibold truncate">{{ list.name }}</h2>
                     </div>
-                    <div>
-                        <p class="text-xs text-gray-500">{{ list.totalContactCount }} contacts</p>
+                    <div class="col-span-4 flex flex-col items-center justify-center ml-2">
+                        <p class="text-xs text-gray-500">{{ list.totalContactCount }}</p>
+                        <p class="text-xs text-gray-500">contacts</p>
                     </div>
-                    <div>
-                        <p class="text-xs text-gray-500">{{ list.dateAdded }}</p>
+                    <div class="col-span-4 text-right">
+                        <p class="text-xs text-gray-500">{{ formatDate(list.dateAdded) }}</p>
                     </div>
                 </div>
             </div>
