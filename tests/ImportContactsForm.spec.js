@@ -61,8 +61,20 @@ describe('processData', () => {
       ]);
     })
 
-    it('correctly processes CSV data with missing email', async () => {
-        
+    it('correctly processes CSV data with full name', async () => {
+        const result = await processData(dataMissingEmail);
+        expect(result).toEqual([
+            {
+              email: 'megan.smith@wineryvalley.net',
+              firstName: 'Megan',
+              lastName: 'Smith',
+              note: 'Vineyard Owner',
+              phone: '8483396947',
+              tags: ['Wine Industry', 'Executive', 'Vineyard Buyer'],
+              userId: expect.any(String),
+            },
+          ]);
+  
     })
 
 })
