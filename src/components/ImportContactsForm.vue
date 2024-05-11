@@ -4,12 +4,10 @@ import FullCheckmark from '@/assets/full-checkmark.svg';
 import Upload from '@/assets/upload.svg';
 import { addDoc, collection, doc, query, updateDoc } from 'firebase/firestore';
 import { AsYouType, format, isValidNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
-
 import Papa from 'papaparse';
 import validator from 'validator';
 import { defineProps, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-
 
 const router = useRouter();
 //To be replaced later.
@@ -21,7 +19,7 @@ const showAlert = ref(false);
 
 //will use these for list selection logic
 const newListName = ref(''); // Initialize newListName to an empty string
-const selectedList = ref('Click to select...')
+const selectedList = ref('Select a list...')
 watch(newListName, () => {
   if (newListName.value) {
     selectedList.value = ''; // Reset selectedList when newListName changes
@@ -274,13 +272,19 @@ function checkSelection() {
                 </div>
                 <div class="flex justify-center space-x-4">
                     <div>
-                        <label for="addList" class="text-left">Add to new list:</label>
-                        <input type="text" id="addList" class="mr-1 border rounded-sm border-gray-500 ">
+                        <label for="addList" class="flex justify-between mr-2">
+                            Add to new list: 
+                            <FullCheckmark class="text-green" v-if="!(newListName === '')"/>
+                        </label>
+                        <input type="text" id="addList" v-model="newListName" class="mr-1 border rounded-sm border-gray-500 ">
                     </div>
                     <div>
-                        <label for="selectList" class="">Add to existing list:</label>
+                        <label for="selectList" class="flex justify-between mr-2">
+                            Add to existing list: 
+                            <FullCheckmark class="text-green fill-current" v-if="!(selectedList === 'Select a list...')"/>
+                        </label>
                         <select id="selectList" v-model="selectedList" class="mr-1 border rounded-sm border-gray-500">
-                            <option  >Click to select...</option>
+                            <option  >Select a list...</option>
                             <option v-for="list in dummyLists" :key="list.id" :value="list.id">{{ list.name }}</option>
                         </select>
                     </div>
