@@ -6,15 +6,12 @@ import { addDoc, collection, doc, query, updateDoc } from 'firebase/firestore';
 import { AsYouType, format, isValidNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
 import Papa from 'papaparse';
 import validator from 'validator';
-import { defineProps, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const user = { id: 'user1' } //To be replaced later.
 const props = defineProps({ contacts: Array });
-const updateDuplicatesFromCSV = ref(null);
-const showAlert = ref(false);
-
 const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
 const dummyLists = [
@@ -47,18 +44,22 @@ const dummyLists = [
     }
 ];
 
-
-const newListName = ref(''); // Initialize newListName to an empty string
+const updateDuplicatesFromCSV = ref(null);
+const showAlert = ref(false);
+/* ------------------------------------------------------
+     Logic for contact list import
+-------------------------------------------------------- */
+const newListName = ref('');
 const selectedList = ref('Select a list...')
 watch(newListName, () => {
-  if (newListName.value) {
-    selectedList.value = 'Select a list...'; // Reset selectedList when newListName changes
-  }
+    if (newListName.value) {
+        selectedList.value = 'Select a list...'; // Reset selectedList when newListName changes
+    }
 });
 watch(selectedList, () => {
-  if (selectedList.value) {
-    newListName.value = ''; // Reset newListName when selectedList changes
-  }
+    if (selectedList.value) {
+        newListName.value = ''; // Reset newListName when selectedList changes
+    }
 });
 
 const processData = async (csvData, headers) => {
@@ -156,7 +157,6 @@ const processData = async (csvData, headers) => {
     return processedValues;
 }
 
-
 function importCSV(event) {
 
     // First Name, Last Name, Email, Note, Phone, Tags
@@ -246,15 +246,13 @@ function importCSV(event) {
     });
 }
 
-function checkSelection() {
+function checkImportRule() {
     if (updateDuplicatesFromCSV.value === null) {
         showAlert.value = true;
     } else {
         showAlert.value = false;
     }
 }
-
-
 
 </script>
 
@@ -317,7 +315,7 @@ function checkSelection() {
                 <!-- Alert -->
 
                 <!-- Upload Button -->
-                <label for="file-upload" class="relative cursor-pointer flex items-center justify-center px-4 py-2 border border-orange-300 text-sm font-medium rounded-md text-gray-700 bg-orange-200 hover:bg-orange-100" @click="checkSelection">
+                <label for="file-upload" class="relative cursor-pointer flex items-center justify-center px-4 py-2 border border-orange-300 text-sm font-medium rounded-md text-gray-700 bg-orange-200 hover:bg-orange-100" @click="checkImportRule">
                     <input id="file-upload" name="file-upload" type="file" class="sr-only" :disabled="showAlert" @change="importCSV">
                     <Upload class="mx-auto text-orange-900"/>
                 </label>
