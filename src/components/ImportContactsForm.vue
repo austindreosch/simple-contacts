@@ -10,30 +10,13 @@ import { defineProps, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-//To be replaced later.
-const user = { id: 'user1' }
+const user = { id: 'user1' } //To be replaced later.
 const props = defineProps({ contacts: Array });
-
 const updateDuplicatesFromCSV = ref(null);
 const showAlert = ref(false);
 
-//will use these for list selection logic
-const newListName = ref(''); // Initialize newListName to an empty string
-const selectedList = ref('Select a list...')
-watch(newListName, () => {
-  if (newListName.value) {
-    selectedList.value = ''; // Reset selectedList when newListName changes
-  }
-});
-watch(selectedList, () => {
-  if (selectedList.value) {
-    newListName.value = ''; // Reset newListName when selectedList changes
-  }
-});
-
 const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
-
 const dummyLists = [
     {
         id: 1,
@@ -65,6 +48,18 @@ const dummyLists = [
 ];
 
 
+const newListName = ref(''); // Initialize newListName to an empty string
+const selectedList = ref('Select a list...')
+watch(newListName, () => {
+  if (newListName.value) {
+    selectedList.value = 'Select a list...'; // Reset selectedList when newListName changes
+  }
+});
+watch(selectedList, () => {
+  if (selectedList.value) {
+    newListName.value = ''; // Reset newListName when selectedList changes
+  }
+});
 
 const processData = async (csvData, headers) => {
 
@@ -161,6 +156,7 @@ const processData = async (csvData, headers) => {
     return processedValues;
 }
 
+
 function importCSV(event) {
 
     // First Name, Last Name, Email, Note, Phone, Tags
@@ -176,6 +172,26 @@ function importCSV(event) {
             const existingContacts = new Map(props.contacts.map(contact => [contact.email, contact.id]));
 
             console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
+
+            let listRef;
+            if (selectedList !== 'Select a list...') {
+                listRef = doc(db, 'lists', selectedList.value);
+                //update lastUpdated field
+                await updateDoc(listRef, {
+                    lastUpdated: new Date().toISOString()
+                });
+            } else if (newListName !== '') {
+                // Create new list
+                const newList = await addDoc(collection(db, "lists"), {
+                    userId: user.id,
+                    listName: newListName.value,
+                    dateAdded: new Date().toISOString(),
+                    lastUpdated: new Date().toISOString(),
+                    contacts: []
+                });
+                listRef = doc(db, 'lists', newList.id);
+            } 
+
 
             processedData.forEach(async (contact) => {
                 //check if contact with same email exists - if so, use conditional logic to update data or not
@@ -193,6 +209,12 @@ function importCSV(event) {
                             tags: contact.tags
                         });
                         console.log('Contact updated:', contact.id);
+
+                        /* -----------------------------------------------------------
+                          //Add contact to list if selected
+                        ----------------------------------------------------------- */
+
+
                     } else {
                         //Do nothing
                         console.log('Contact found but not updated:', contact.id);
@@ -209,11 +231,12 @@ function importCSV(event) {
                         tags: contact.tags
                     });
                     console.log('Contact added with ID:', docRef.id);
-                }
-            });
-                //if contact with same email exists, update the rest with no info
 
-                // else addDoc
+                    /* -----------------------------------------------------------
+                      //Add contact to list if selected
+                    ----------------------------------------------------------- */
+                }
+            }); 
 
             router.push('/');
         },
@@ -274,14 +297,14 @@ function checkSelection() {
                     <div>
                         <label for="addList" class="flex justify-between mr-2">
                             Add to new list: 
-                            <FullCheckmark class="text-green" v-if="!(newListName === '')"/>
+                            <FullCheckmark class="text-green-500" v-if="!(newListName === '')"/>
                         </label>
                         <input type="text" id="addList" v-model="newListName" class="mr-1 border rounded-sm border-gray-500 ">
                     </div>
                     <div>
                         <label for="selectList" class="flex justify-between mr-2">
                             Add to existing list: 
-                            <FullCheckmark class="text-green fill-current" v-if="!(selectedList === 'Select a list...')"/>
+                            <FullCheckmark class="text-green-500 fill-current" v-if="!(selectedList === 'Select a list...')"/>
                         </label>
                         <select id="selectList" v-model="selectedList" class="mr-1 border rounded-sm border-gray-500">
                             <option  >Select a list...</option>

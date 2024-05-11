@@ -23,7 +23,10 @@ const dummyLists = [
         id: 4,
         name: 'Luxury Realtor List 4/1/23',
         totalContactCount: 1002,
-        dateAdded: '09-25-2023'
+        dateAdded: '09-25-2023',
+        contacts : [
+            {id: 1, dateAddedToList: '09-25-2023'},
+        ]
     }
 ];
 
