@@ -1,12 +1,12 @@
 <script setup>
 import { db } from '@/assets/firebase';
 import FullCheckmark from '@/assets/full-checkmark.svg';
+import { user } from '@/composables/getUser';
 import { addDoc, collection } from 'firebase/firestore';
 import { reactive, ref } from 'vue';
 
-
 const formData = reactive({
-  userID: 'user1',
+  userID: user.value.uid,
   firstName: '',
   lastName: '',
   email: '',

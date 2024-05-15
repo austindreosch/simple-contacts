@@ -3,26 +3,27 @@ import { db } from '@/assets/firebase';
 import ContactBlock from '@/components/ContactBlock.vue';
 import DetailBlock from '@/components/DetailBlock.vue';
 import ListsBlock from '@/components/ListsBlock.vue';
+import { user } from '@/composables/getUser'; // Ensure the path to getUser.js is correct
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { onMounted, ref } from 'vue';
+import { ref, watch } from 'vue';
 
-const user = { id: 'user1' } //to be replaced later
 const contacts = ref([]);
 const selectedContact = ref(null);
-
 
 /* -----------------------------------------------------------
 USER CONTACTS MANAGED IN PARENT COMPONENT
 ----------------------------------------------------------- */
 async function loadContacts() {
-    const q = query(collection(db, 'contacts'), where('userId', '==', user.id));
+  if (user.value) {
+    const q = query(collection(db, 'contacts'), where('userId', '==', user.value.uid));
     const querySnapshot = await getDocs(q);
-    contacts.value = querySnapshot.docs.map(doc => {
-        return {
-            id: doc.id, 
-            ...doc.data()
-        };
-    })
+    contacts.value = querySnapshot.docs.map(doc => ({
+      id: doc.id, 
+      ...doc.data()
+    }));
+  } else {
+    console.log('User is not authenticated');
+  }
 }
 
 function handleContactSelected(contact) {
@@ -34,8 +35,10 @@ function refreshContacts() {
     loadContacts();
 }
 
-onMounted(async () => {
+watch(user, async (newUser) => {
+  if (newUser) {
     await loadContacts();
+  }
 });
 
 </script>
