@@ -1,10 +1,14 @@
 <script setup>
+import { useAuth } from '@/composables/useAuth';
 
+const { user } = useAuth();
+console.log('User:', user);
 
 </script>
 
 <template>
   <div>
+    <!-- NAV -->
     <nav class="p-4 flex justify-center fixed pt-10 pb-7 top-0 left-0 right-0 bg-orange-200 z-10">
       <div class="font-outfit text-black-800 flex space-x-2 items-center pr-20">
         <h1 class="text-4xl font-semibold">simple</h1>
@@ -19,10 +23,11 @@
         <router-link class="px-4 py-2 bg-blue-400 text-white rounded hover:bg-white hover:text-black" to="/">Home</router-link>
         <router-link class="px-4 py-2 bg-blue-400 text-white rounded hover:bg-white hover:text-black" to="/add">Add Invidual Contact</router-link>
         <router-link class="px-4 py-2 bg-blue-400 text-white rounded hover:bg-white hover:text-black" to="/import">Import Contacts</router-link>
-        <router-link class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-400 hover:text-black" to="#">Logout</router-link>
+        <router-link class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-400 hover:text-black" to="/auth">{{ user ? user.email : 'Login' }}</router-link>
       </div>
     </nav>
-    <main class="max-w-10xl"> 
+    <!-- BODY -->
+    <main class="max-w-10xl mt-32"> 
       <router-view></router-view>
     </main>
   </div>
