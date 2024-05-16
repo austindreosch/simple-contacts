@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -15,30 +15,35 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
+} */
 
 a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
 }
-a:hover {
+/* a:hover {
   color: #535bf2;
-}
+} */
 
-body {
-  margin: 0;
-  display: flex;
+
+/* body { */
+  /* margin: 0; */
+  /* display: flex; */
+  /* padding: 1rem; */
   /* place-items: center; */
   /* min-width: 320px; */
-  min-height: 100vh;
-  background-color: rgb(246, 246, 246);
-}
+  /* min-height: 100vh; */
+  /* background-color: rgb(246, 246, 246);
+} */
 
-h1 {
+
+
+
+/* h1 {
   font-size: 3.2em;
   line-height: 1.1;
-}
+} */
 
 /* button {
   border-radius: 8px;
@@ -65,11 +70,11 @@ button:focus-visible {
 
 #app {
   margin: 0 auto;
-  padding: 2rem;
+  /* padding: 0rem; */
   text-align: center;
 }
 
-@media (prefers-color-scheme: light) {
+/* @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
@@ -80,4 +85,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
+} */
