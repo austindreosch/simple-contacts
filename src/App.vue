@@ -89,8 +89,6 @@ getUser();
   </header>
 
 
-
-
     <!-- <nav class="p-4 flex justify-center fixed pt-10 pb-7 top-0 left-0 right-0 bg-orange-200 z-10">
 
       <router-link class="text-black" to="/">

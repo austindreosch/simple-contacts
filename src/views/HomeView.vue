@@ -45,13 +45,13 @@ watch(user, async (newUser) => {
 
 
 <template>
-    <div class="flex space-x-4 w-full">
-        <div class="">
-            <ContactBlock :contacts="contacts" @contactSelected="handleContactSelected"/>
-        </div>
-        <div class="max-w-sm min-w-[320px]">
-            <DetailBlock :selectedContact="selectedContact" @contactUpdated="refreshContacts"/>
-            <ListsBlock />
-        </div>
-    </div>
+  <div class="flex w-full h-screen">
+      <div class="flex-grow overflow-y-auto mr-2">
+          <ContactBlock :contacts="contacts" @contactSelected="handleContactSelected"/>
+      </div>
+      <div class="max-w-sm overflow-y-auto">
+          <DetailBlock :selectedContact="selectedContact" @contactUpdated="refreshContacts"/>
+          <ListsBlock />
+      </div>
+  </div>
 </template>

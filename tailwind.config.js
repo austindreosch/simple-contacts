@@ -12,6 +12,8 @@ export default {
         '24': 'repeat(24, minmax(0, 1fr))',
       },
       maxWidth: {
+        '7xl': '70rem', 
+        '8xl': '80rem', 
         '9xl': '90rem', 
         '10xl': '100rem', 
         '11xl': '110rem',
@@ -19,6 +21,10 @@ export default {
         '13xl': '130rem',
         '14xl': '140rem',
         '15xl': '150rem',
+      },
+      fontSize: {
+        '2xs': '0.625rem', // 10px
+        '3xs': '0.5rem', // 8px
       }
     },
   },
