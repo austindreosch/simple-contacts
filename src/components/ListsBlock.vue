@@ -47,15 +47,19 @@ async function loadLists() {
 </script>
 
 <template>
-    <div class="flex justify-between items-end">
+    <!-- Details -->
+    <div class="flex justify-between items-end my-2">
         <h1 class="text-left text-2xl mt-2">Lists</h1>
         <p class="text-xs mb-1 font-bold">SORT BY</p>
     </div>
-    <div class="bg-gray-200 w-full px-6 py-4 h-64 space-y-2">
+
+
+    <!-- Lists -->
+    <div class="bg-white border border-gray-300 rounded-lg shadow-md w-full px-4 py-5 space-y-2">
         <!------------------------ 
             FEED LISTS DATA HERE 
         -------------------------->
-        <div v-for="list in dummyLists" :key="list.id">
+        <!-- <div v-for="list in dummyLists" :key="list.id">
             <div class="h-12 flex-grow bg-blue-200  rounded border border-blue-300 mt-1">
                 <div class="grid grid-cols-20 justify-between items-center h-full px-1 pl-2">
                     <div class="col-span-12 text-left">
@@ -70,7 +74,27 @@ async function loadLists() {
                     </div>
                 </div>
             </div>
+        </div> -->
+
+
+
+        <div v-for="list in dummyLists" :key="list.id">            
+            <div class="relative block rounded-md border border-gray-300 shadow-sm p-2 bg-gray-200 ">
+                <div class="grid grid-cols-20 justify-between items-center h-full px-1 pl-2">
+                    <div class="col-span-12 text-left">
+                        <h2 class="text-sm font-semibold truncate">{{ list.name }}</h2>
+                    </div>
+                    <div class="col-span-4 flex flex-col items-center justify-center ml-2">
+                        <p class="text-xs text-gray-900">{{ list.totalContactCount }}</p>
+                        <p class="text-xs text-gray-900">contacts</p>
+                    </div>
+                    <div class="col-span-4 text-right">
+                        <p class="text-xs text-gray-900">{{ formatDate(list.dateAdded) }}</p>
+                    </div>
+                </div>
+            </div>
         </div>
+            
 
     </div>
 </template>

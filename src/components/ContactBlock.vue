@@ -39,10 +39,10 @@ function selectContact(contact) {
         </div>
 
         <!-- TABLE-->
-        <div class="overflow-x-auto rounded-lg border border-gray-200 my-1">
+        <div class="overflow-x-auto rounded-lg border border-gray-300 shadow-md my-1 mr-1 mb-1">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
-                    <thead class="ltr:text-left rtl:text-right text-left">
+                <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm mb-1">
+                    <thead class="ltr:text-left rtl:text-right text-left bg-gray-200">
                         <tr>
                             <th class="px-4 py-2">
                                 <label for="SelectAll" class="sr-only">Select All</label>

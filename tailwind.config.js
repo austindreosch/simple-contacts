@@ -25,7 +25,13 @@ export default {
       fontSize: {
         '2xs': '0.625rem', // 10px
         '3xs': '0.5rem', // 8px
-      }
+      },
+      colors: {
+        'my-dark': '#2e4448',
+        'my-teal': '#50b6a8',
+        'my-lightteal': '#79cdbc',
+        'my-peach': '#fec6a4',
+      },
     },
   },
   plugins: [],
