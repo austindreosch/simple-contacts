@@ -38,17 +38,36 @@ getUser();
               <li>
                 <router-link class="text-white transition hover:text-gray-500/75"to="/about"> About </router-link>
               </li>
-              <!-- <li>
-                <router-link class="text-gray-500 transition hover:text-gray-500/75" to="/import"> Import Contacts </router-link>
-              </li> -->
             </ul>
           </nav>
+          <!-- buttons -->
+
 
           <div class="flex items-center gap-4">
+            <!-- ACTIONS -->
+            <div class="sm:flex sm:gap-4">
+              <router-link
+                class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark shadow"
+                to="/auth"
+              >
+                Add Individual Contact
+              </router-link>
+  
+              <div class="hidden sm:flex">
+                <router-link
+                  class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark"
+                  to="/auth"
+                >
+                  Import Contacts
+                </router-link>
+              </div>
+            </div>
+
+
             <!-- LOGIN+REGISTER/PROFILE -->
             <div class="sm:flex sm:gap-4">
               <router-link
-                class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-gray-800 shadow"
+                class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark shadow"
                 to="/auth"
               >
                 Login
@@ -89,7 +108,7 @@ getUser();
   
   
   <!-- Header -->
-  <div class="bg-my-dark mb-2">
+  <div class="bg-my-dark mb-2 hidden">
     <div class="mx-auto max-w-screen-2xl px-4 py-2 sm:px-6 sm:py-4 lg:px-8">
       <div class="sm:flex sm:items-center sm:justify-between">
         
@@ -120,23 +139,7 @@ getUser();
             type="button"
             >
               <span class="text-sm font-medium"> Settings </span>
-
-              <!-- <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-              >
-              <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg> -->
           </button>
-          
         </div>
 
 
