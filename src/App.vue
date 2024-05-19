@@ -8,7 +8,7 @@ getUser();
 
     <!-- NAV -->
   <header class="bg-my-lightteal">
-    <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-4">
       <div class="flex h-16 items-center justify-between">
 
         <!-- LEFT SIDE OF NAV -->
@@ -28,10 +28,10 @@ getUser();
         </div>
         
         <!-- RIGHT SIDE OF NAV -->
-        <div class="md:flex md:items-center md:gap-12">
+        <div class="md:flex md:items-center md:gap-8">
           <!-- PAGES -->
           <nav aria-label="Global" class="hidden md:block">
-            <ul class="flex items-center gap-6 text-sm">
+            <ul class="flex items-center gap-4 text-sm">
               <li>
                 <router-link class="text-white transition hover:text-gray-500/75"to="/"> Home </router-link>
               </li>
@@ -43,7 +43,7 @@ getUser();
           <!-- buttons -->
 
 
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
             <!-- ACTIONS -->
             <div class="sm:flex sm:gap-4">
               <router-link
@@ -68,6 +68,7 @@ getUser();
             <div class="sm:flex sm:gap-4">
               <router-link
                 class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark shadow"
+                v-if="!user.uid" 
                 to="/auth"
               >
                 Login
@@ -76,11 +77,38 @@ getUser();
               <div class="hidden sm:flex">
                 <router-link
                   class="rounded-md bg-gray-100 px-5 py-2.5 text-sm font-medium text-my-dark"
+                  v-if="!user.uid" 
                   to="/auth"
                 >
                   Register
                 </router-link>
               </div>
+
+              <!-- ACTIVE USER -->
+              <div class=" sm:flex">
+                <router-link
+                  class="rounded-md bg-my-dark px-5 py-2.5 text-sm ml-[-10px] font-medium text-white"
+                  v-if="user.uid" 
+                  to="/profile"
+                >
+                  {{ user.email }}
+                </router-link>
+              </div>
+
+              <div class=" sm:flex">
+                <router-link
+                  class="rounded-md  px-1 py-2.5 text-white"
+                  v-if="user.uid" 
+                  to="/logout"
+                >
+                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M216-144q-29.7 0-50.85-21.15Q144-186.3 144-216v-528q0-29.7 21.15-50.85Q186.3-816 216-816h264v72H216v528h264v72H216Zm432-168-51-51 81-81H384v-72h294l-81-81 51-51 168 168-168 168Z"/></svg>
+                </router-link>
+              </div>
+
+
+
+
+
             </div>
 
             <!-- MOBILE SELECTOR -->

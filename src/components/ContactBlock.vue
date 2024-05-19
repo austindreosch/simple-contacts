@@ -71,18 +71,57 @@ function goToPage(page) {
             <p class="text-xs">Currently showing {{ filteredContacts.length || 'N/A' }} of {{ props.contacts.length }} total contacts.</p>
             <!-- <button class="text-xs font-bold">FILTER BY TAG</button> -->
 
-            <!-- Right BUttons and Search -->
-            <div>
+            <div class="flex items-center gap-2">
+
+            <div class="relative">
+                <!-- Search -->
+                <label for="Search" class="sr-only"> Search for... </label>
+
+                <input
+                    type="text"
+                    id="Search"
+                    placeholder="Search for..."
+                    class="w-full rounded-md border border-gray-200 py-2 px-2 pe-10 shadow-md sm:text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                />
+
+                <span class="absolute inset-y-0 end-0 grid w-10 place-content-center">
+                    <button
+                    type="button"
+                    class="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                    >
+                    <span class="sr-only">Search</span>
+
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="h-4 w-4"
+                    >
+                        <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                        />
+                    </svg>
+                    </button>
+                </span>
+            </div>
+
+
+
+                <!-- Download & Filter -->
                 <span class="inline-flex overflow-hidden rounded-md border bg-white shadow-sm">
                     <button
-                    class="flex items-center gap-1  border-e px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:relative"
+                    class="flex items-center gap-1  border-e px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
                     >
                     Download 
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M480-336 288-528l51-51 105 105v-342h72v342l105-105 51 51-192 192ZM263.72-192Q234-192 213-213.15T192-264v-72h72v72h432v-72h72v72q0 29.7-21.16 50.85Q725.68-192 695.96-192H263.72Z"/></svg>
                     </button>
                 
                     <button
-                    class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:relative"
+                    class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
                     title="View Orders"
                     >
                     Filter
@@ -92,6 +131,11 @@ function goToPage(page) {
             </div>
 
 
+            
+
+
+
+            
         </div>
 
 
@@ -104,17 +148,17 @@ function goToPage(page) {
         <div class="flex-grow overflow-hidden rounded-lg border border-gray-300 shadow-md my-0 mr-1 mb-1 flex flex-col">
             <div class="overflow-x-auto">
                 <table class="min-w-full table-fixed divide-y divide-gray-200 bg-white text-sm">
-                    <thead class="bg-gray-200 sticky top-0">
+                    <thead class="bg-my-dark sticky text-white top-0">
                         <tr>
                             <th class="px-4 py-2 text-left">
                                 <label for="SelectAll" class="sr-only">Select All</label>
                                 <input type="checkbox" id="SelectAll" class="size-4 rounded border-gray-300" />
                             </th>
-                            <th class="px-4 py-2 text-left font-medium text-gray-900">Name</th>
-                            <th class="px-4 py-2 text-left font-medium text-gray-900">Email</th>
-                            <th class="px-4 py-2 text-left font-medium pl-4 text-gray-900">Phone</th>
-                            <th class="px-4 py-2 text-left font-medium text-gray-900">Note</th>
-                            <th class="px-4 py-2 text-left font-medium pl-5 text-gray-900">Tags</th>
+                            <th class="px-4 py-2 text-left font-medium ">Name</th>
+                            <th class="px-4 py-2 text-left font-medium ">Email</th>
+                            <th class="px-4 py-2 text-left font-medium pl-4 ">Phone</th>
+                            <th class="px-4 py-2 text-left font-medium ">Note</th>
+                            <th class="px-4 py-2 text-left font-medium pl-5 ">Tags</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -136,67 +180,76 @@ function goToPage(page) {
                                 </div>
                             </td>
                         </tr>
+                        <tr>
+                            <div>
+                                
+                            </div>
+                        </tr>
                     </tbody>
                 </table>
+                    <div class="bg-white py-2">
+
+                        <!-- PAGINATION -->
+                        <ol class="flex justify-center gap-1 text-xs font-medium mt-3">
+                            <li>
+                                <button
+                                    @click="prevPage"
+                                    :disabled="currentPage === 1"
+                                    class="inline-flex size-8 items-center justify-center rounded border border-gray-200 bg-gray-100 text-gray-900 rtl:rotate-180"
+                                >
+                                    <span class="sr-only">Prev Page</span>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-3 w-3"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                            clip-rule="evenodd"
+                                        />
+                                    </svg>
+                                </button>
+                            </li>
+                
+                            <li v-for="page in totalPages" :key="page">
+                                <button
+                                    @click="goToPage(page)"
+                                    :class="{'block size-8 rounded border border-gray-200 bg-gray-100 text-center leading-8 text-gray-900': page !== currentPage, 'block size-8 rounded border-my-teal bg-my-teal text-center leading-8 text-white': page === currentPage}"
+                                >
+                                    {{ page }}
+                                </button>
+                            </li>
+                
+                            <li>
+                                <button
+                                    @click="nextPage"
+                                    :disabled="currentPage === totalPages"
+                                    class="inline-flex size-8 items-center justify-center rounded border border-gray-200 bg-gray-100 text-gray-900 rtl:rotate-180"
+                                >
+                                    <span class="sr-only">Next Page</span>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-3 w-3"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a 1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                            clip-rule="evenodd"
+                                        />
+                                    </svg>
+                                </button>
+                            </li>
+                        </ol>
+
+                    </div>
             </div>
         </div>
 
 
-        <!-- PAGINATION -->
-        <ol class="flex justify-center gap-1 text-xs font-medium mt-3">
-            <li>
-                <button
-                    @click="prevPage"
-                    :disabled="currentPage === 1"
-                    class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180"
-                >
-                    <span class="sr-only">Prev Page</span>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3 w-3"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                    >
-                        <path
-                            fill-rule="evenodd"
-                            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                            clip-rule="evenodd"
-                        />
-                    </svg>
-                </button>
-            </li>
-
-            <li v-for="page in totalPages" :key="page">
-                <button
-                    @click="goToPage(page)"
-                    :class="{'block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900': page !== currentPage, 'block size-8 rounded border-my-teal bg-my-teal text-center leading-8 text-white': page === currentPage}"
-                >
-                    {{ page }}
-                </button>
-            </li>
-
-            <li>
-                <button
-                    @click="nextPage"
-                    :disabled="currentPage === totalPages"
-                    class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180"
-                >
-                    <span class="sr-only">Next Page</span>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3 w-3"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                    >
-                        <path
-                            fill-rule="evenodd"
-                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a 1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                            clip-rule="evenodd"
-                        />
-                    </svg>
-                </button>
-            </li>
-        </ol>
 
     </div>
 </template>
