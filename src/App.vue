@@ -68,7 +68,7 @@ getUser();
             <div class="sm:flex sm:gap-4">
               <router-link
                 class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark shadow"
-                v-if="!user.uid" 
+                v-if="user && !user.uid" 
                 to="/auth"
               >
                 Login
@@ -77,7 +77,7 @@ getUser();
               <div class="hidden sm:flex">
                 <router-link
                   class="rounded-md bg-gray-100 px-5 py-2.5 text-sm font-medium text-my-dark"
-                  v-if="!user.uid" 
+                  v-if="user && !user.uid" 
                   to="/auth"
                 >
                   Register
@@ -88,7 +88,7 @@ getUser();
               <div class=" sm:flex">
                 <router-link
                   class="rounded-md bg-my-dark px-5 py-2.5 text-sm ml-[-10px] font-medium text-white"
-                  v-if="user.uid" 
+                  v-if="user && user.uid"  
                   to="/profile"
                 >
                   {{ user.email }}
@@ -98,7 +98,7 @@ getUser();
               <div class=" sm:flex">
                 <router-link
                   class="rounded-md  px-1 py-2.5 text-white"
-                  v-if="user.uid" 
+                  v-if="user && user.uid" 
                   to="/logout"
                 >
                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M216-144q-29.7 0-50.85-21.15Q144-186.3 144-216v-528q0-29.7 21.15-50.85Q186.3-816 216-816h264v72H216v528h264v72H216Zm432-168-51-51 81-81H384v-72h294l-81-81 51-51 168 168-168 168Z"/></svg>

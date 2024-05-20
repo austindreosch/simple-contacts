@@ -8,7 +8,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { ref, watch } from 'vue';
 
 const contacts = ref([]);
-const selectedContact = ref(null);
+const highlightedContact = ref(null);
 
 /* -----------------------------------------------------------
 USER CONTACTS MANAGED IN PARENT COMPONENT
@@ -26,8 +26,8 @@ async function loadContacts() {
   }
 }
 
-function handleContactSelected(contact) {
-    selectedContact.value = contact;
+function handleContactHighlighted(contact) {
+    highlightedContact.value = contact;
 }
 
 function refreshContacts() {
@@ -47,10 +47,10 @@ watch(user, async (newUser) => {
 <template>
   <div class="flex w-full max-w-screen-2xl h-screen mt-3">
       <div class="flex-grow overflow-y-auto mr-2">
-          <ContactBlock :contacts="contacts" @contactSelected="handleContactSelected"/>
+          <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted"/>
       </div>
       <div class="max-w-sm overflow-y-auto">
-          <DetailBlock :selectedContact="selectedContact" @contactUpdated="refreshContacts"/>
+          <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts"/>
           <ListsBlock />
       </div>
   </div>

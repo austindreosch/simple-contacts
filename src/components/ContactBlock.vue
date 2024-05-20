@@ -7,22 +7,22 @@ const props = defineProps({
     filterTag: String,
     contacts: Array
 });
-const emit = defineEmits(['contactSelected']);
+const emit = defineEmits(['contactHighlighted']);
 const loading = ref(true);
-const selectedContactId = ref(null);
+const highlightedContactId = ref(null);
 
 /* -----------------------------------------------------------
     CONTACT SELECTION & FILTERING
 ----------------------------------------------------------- */
 
-function selectContact(contact) {
+function highlightContact(contact) {
     // Unselect if the same contact is clicked again, otherwise select the contact
-    if (selectedContactId.value === contact.id) {
-        selectedContactId.value = null; 
-        emit('contactSelected', null);
+    if (highlightedContactId.value === contact.id) {
+        highlightedContactId.value = null; 
+        emit('contactHighlighted', null);
     } else {
-        selectedContactId.value = contact.id; 
-        emit('contactSelected', contact);
+        highlightedContactId.value = contact.id; 
+        emit('contactHighlighted', contact);
     }
 }
 
@@ -67,52 +67,55 @@ function goToPage(page) {
     <div class="flex flex-col max-h-screen">
         <!-- Details -->
         <div class="flex justify-between items-end mb-2 px-1">
-            <h1 class="text-left text-2xl">Contacts</h1>
-            <p class="text-xs">Currently showing {{ filteredContacts.length || 'N/A' }} of {{ props.contacts.length }} total contacts.</p>
-            <!-- <button class="text-xs font-bold">FILTER BY TAG</button> -->
+            <!-- <h1 class="text-left text-2xl">Contacts</h1> -->
+            <p class="text-xs">Currently showing {{ filteredContacts.length || 'N/A' }} of {{ props.contacts.length }} total contacts. <b> {{  '0' }} contacts selected.</b></p>            
 
             <div class="flex items-center gap-2">
-
-            <div class="relative">
                 <!-- Search -->
-                <label for="Search" class="sr-only"> Search for... </label>
+                <div class="relative">
+                    <label for="Search" class="sr-only"> Search for... </label>
 
-                <input
-                    type="text"
-                    id="Search"
-                    placeholder="Search for..."
-                    class="w-full rounded-md border border-gray-200 py-2 px-2 pe-10 shadow-md sm:text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                />
+                    <input
+                        type="text"
+                        id="Search"
+                        placeholder="Search for..."
+                        class="w-full rounded-md border border-gray-200 py-2 px-2 pe-10 shadow-md sm:text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    />
 
-                <span class="absolute inset-y-0 end-0 grid w-10 place-content-center">
-                    <button
-                    type="button"
-                    class="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                    >
-                    <span class="sr-only">Search</span>
+                    <span class="absolute inset-y-0 end-0 grid w-10 place-content-center">
+                        <button
+                        type="button"
+                        class="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                        >
+                        <span class="sr-only">Search</span>
 
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="h-4 w-4"
-                    >
-                        <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                        />
-                    </svg>
-                    </button>
-                </span>
-            </div>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="h-4 w-4"
+                        >
+                            <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                            />
+                        </svg>
+                        </button>
+                    </span>
+                </div>
 
-
-
-                <!-- Download & Filter -->
+                <!-- Download, Email & Filter -->
                 <span class="inline-flex overflow-hidden rounded-md border bg-white shadow-sm">
+                    <button
+                    class="flex items-center gap-1  border-e px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
+                    >
+                    Email
+                    <svg class="ml-[1.5px]"xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M168-192q-29 0-50.5-21.5T96-264v-432q0-29 21.5-50.5T168-768h624q30 0 51 21.5t21 50.5v432q0 29-21 50.5T792-192H168Zm312-240 312-179v-85L480-517 168-696v85l312 179Z"/></svg>
+                    </button>
+
                     <button
                     class="flex items-center gap-1  border-e px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
                     >
@@ -162,7 +165,7 @@ function goToPage(page) {
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                        <tr v-for="contact in paginatedContacts" :key="contact.id" @click="selectContact(contact)" :class="{ 'bg-blue-100': contact.id === selectedContactId }" class="cursor-pointer">
+                        <tr v-for="contact in paginatedContacts" :key="contact.id" @click="highlightContact(contact)" :class="{ 'bg-blue-100': contact.id === highlightedContactId }" class="cursor-pointer">
                             <td class="px-4 py-2 text-left">
                                 <label class="sr-only" :for="'Row' + contact.id">Row {{ contact.id }}</label>
                                 <input class="size-4 rounded border-gray-300" type="checkbox" :id="'Row' + contact.id" />
