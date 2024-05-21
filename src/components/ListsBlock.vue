@@ -1,4 +1,5 @@
 <script setup>
+import SortDropdown from '@/components/dropdowns/SortDropdown.vue';
 import { computed, defineEmits, defineProps, ref } from 'vue';
 
 const dummyLists = [
@@ -102,22 +103,15 @@ function goToPage(page) {
 
 
         <div>
-            <span class="inline-flex overflow-hidden rounded-md border bg-white shadow-sm">
+            <span class="inline-flex rounded-md border bg-white shadow-sm">
                 <button
-                class="flex items-center gap-1  border-e px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:relative"
-                >
-                Sort
-                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M456.18-192Q446-192 439-198.9t-7-17.1v-227L197-729q-9-12-2.74-25.5Q200.51-768 216-768h528q15.49 0 21.74 13.5Q772-741 763-729L528-443v227q0 10.2-6.88 17.1-6.89 6.9-17.06 6.9h-47.88Z"/></svg>
-                </button>
-            
-                <button
-                class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:relative"
+                class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative border-r border-gray-200"
                 title="View Orders"
                 >
-                Delete
-                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M312-144q-29.7 0-50.85-21.15Q240-186.3 240-216v-480h-48v-72h192v-48h192v48h192v72h-48v479.57Q720-186 698.85-165T648-144H312Zm72-144h72v-336h-72v336Zm120 0h72v-336h-72v336Z"/></svg>    
-            
-            </button>
+                Edit
+                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/></svg>   
+                </button>
+                <SortDropdown />
             </span>
         </div>
 

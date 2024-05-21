@@ -1,6 +1,9 @@
 <script setup>
 import dummyData from '@/assets/dummydata.json';
 import { db } from '@/assets/firebase';
+import DownloadDropdown from '@/components/dropdowns/DownloadDropdown.vue';
+import EmailDropdown from '@/components/dropdowns/EmailDropdown.vue';
+import FilterDropdown from '@/components/dropdowns/FilterDropdown.vue';
 import { computed, defineEmits, defineProps, ref } from 'vue';
 
 const props = defineProps({
@@ -107,38 +110,15 @@ function goToPage(page) {
                     </span>
                 </div>
 
+
                 <!-- Download, Email & Filter -->
-                <span class="inline-flex overflow-hidden rounded-md border bg-white shadow-sm">
-                    <button
-                    class="flex items-center gap-1  border-e px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
-                    >
-                    Email
-                    <svg class="ml-[1.5px]"xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M168-192q-29 0-50.5-21.5T96-264v-432q0-29 21.5-50.5T168-768h624q30 0 51 21.5t21 50.5v432q0 29-21 50.5T792-192H168Zm312-240 312-179v-85L480-517 168-696v85l312 179Z"/></svg>
-                    </button>
-
-                    <button
-                    class="flex items-center gap-1  border-e px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
-                    >
-                    Download 
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M480-336 288-528l51-51 105 105v-342h72v342l105-105 51 51-192 192ZM263.72-192Q234-192 213-213.15T192-264v-72h72v72h432v-72h72v72q0 29.7-21.16 50.85Q725.68-192 695.96-192H263.72Z"/></svg>
-                    </button>
-                
-                    <button
-                    class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
-                    title="View Orders"
-                    >
-                    Filter
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M456.18-192Q446-192 439-198.9t-7-17.1v-227L197-729q-9-12-2.74-25.5Q200.51-768 216-768h528q15.49 0 21.74 13.5Q772-741 763-729L528-443v227q0 10.2-6.88 17.1-6.89 6.9-17.06 6.9h-47.88Z"/></svg>
-                    </button>
+                <span class="inline-flex rounded-md border border-gray-200 bg-white shadow-sm">
+                    <EmailDropdown />
+                    <DownloadDropdown />
+                    <FilterDropdown />
                 </span>
+
             </div>
-
-
-            
-
-
-
-            
         </div>
 
 
