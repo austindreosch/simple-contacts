@@ -112,7 +112,7 @@ getUser();
                     href="#"
                     class="border-e px-4 py-2 text-sm/none text-white hover:bg-gray-50 hover:text-gray-100"
                   >
-                    {{ user.email }}
+                    <!-- {{ user.email }} --> austindreosch@gmail.com
                   </a>
               
                   <button class="h-full p-2 text-gray-600 hover:bg-gray-50 hover:text-gray-100">
