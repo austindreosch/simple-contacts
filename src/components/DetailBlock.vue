@@ -32,9 +32,9 @@ const deleteContact = async () => {
 
 
         <div class="">
-            <span class="inline-flex overflow-hidden rounded-md border bg-white shadow-sm py-0.5">
+            <span class="inline-flex overflow-hidden rounded-md border bg-white shadow-sm">
                 <button
-                class="flex items-center gap-1  border-e px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
+                class="flex items-center gap-1  border-e px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
                 >
                 Edit
                 <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/></svg>

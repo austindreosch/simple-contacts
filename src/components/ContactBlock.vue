@@ -1,6 +1,7 @@
 <script setup>
 import dummyData from '@/assets/dummydata.json';
 import { db } from '@/assets/firebase';
+import AddListDropdown from '@/components/dropdowns/AddListDropdown.vue';
 import DownloadDropdown from '@/components/dropdowns/DownloadDropdown.vue';
 import EmailDropdown from '@/components/dropdowns/EmailDropdown.vue';
 import FilterDropdown from '@/components/dropdowns/FilterDropdown.vue';
@@ -114,6 +115,7 @@ function goToPage(page) {
                 <!-- Download, Email & Filter -->
                 <span class="inline-flex rounded-md border border-gray-200 bg-white shadow-sm">
                     <EmailDropdown />
+                    <AddListDropdown />
                     <DownloadDropdown />
                     <FilterDropdown />
                 </span>
