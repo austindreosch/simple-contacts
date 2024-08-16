@@ -48,7 +48,7 @@ getUser();
             <!-- ACTIONS -->
             <div class="sm:flex gap-2">
               <router-link
-                class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark shadow "
+                class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark shadow"
                 to="/add"
               >
                 Add Individual Contact
@@ -56,7 +56,7 @@ getUser();
   
               <div class="hidden sm:flex">
                 <router-link
-                  class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark shadow ml-0.5"
+                  class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark shadow ml-0.5 truncate"
                   to="/import"
                 >
                   Import Contacts

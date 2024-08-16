@@ -1,6 +1,9 @@
 <script setup>
+import { db } from '@/assets/firebase';
 import SortDropdown from '@/components/dropdowns/SortDropdown.vue';
-import { computed, defineEmits, defineProps, ref } from 'vue';
+import { user } from '@/composables/getUser';
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { computed, onMounted, ref } from 'vue';
 
 const dummyLists = [
     {
@@ -52,18 +55,52 @@ const formatDate = (dateString) => {
     return `${month}/${day}/${year}`;
 };
 
-// Load lists from the database
+const lists = ref([]);
+
 async function loadLists() {
-    // Load lists from the database
+    console.log('CHECKING USER VALUE', user.value.uid);
+    if (user.value) {
+        const q = query(collection(db, 'lists'), where('userID', '==', user.value.uid));
+        console.log("USER ID LOADING LISTS" ,user.value.uid)
+        try {
+            const querySnapshot = await getDocs(q);
+            console.log(querySnapshot.size);
+            const loadedLists = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                loadedLists.push({
+                    id: doc.id,
+                    listName: data.listName,
+                    userID: data.userID,
+                    contacts: data.contacts,
+                    dateAdded: data.dateAdded.toDate().toLocaleString(),
+                    lastUpdated: data.lastUpdated.toDate().toLocaleString()
+                });
+            });
+            lists.value = loadedLists;
+        } catch (error) {
+            console.error('Failed to load lists:', error);
+        }
+    } 
 }
 
+onMounted(async () => {
+  // Wait for user to be available
+  while (!user.value) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  // Now that user is available, proceed with loading lists
+  loadLists();
+});
 
 /* -----------------------------------------------------------
     PAGINATION
 ----------------------------------------------------------- */
 const filteredLists = computed(() => {
   // If a filter tag is passed, filter the contacts, otherwise show all
-  return dummyLists;
+  console.log('lists', lists.value);
+  return lists.value
 });
 
 const currentListPage = ref(1);
@@ -74,6 +111,8 @@ const paginatedLists = computed(() => {
     const end = start + listsPerPage;
     return filteredLists.value.slice(start, end);
 });
+
+console.log('paginatedLists', paginatedLists.value);
 
 const totalPages = computed(() => Math.ceil(filteredLists.value.length / listsPerPage)); //replace this with real 
 
@@ -133,10 +172,10 @@ function goToPage(page) {
             <div class="relative block rounded-md border-2  border-teal-600 shadow-lg p-2 bg-my-teal ">
                 <div class="grid grid-cols-20 justify-between items-center h-full px-1 pl-2">
                     <div class="col-span-12 text-left">
-                        <h2 class="text-sm font-semibold truncate text-white">{{ list.name }}</h2>
+                        <h2 class="text-sm font-semibold truncate text-white">{{ list.listName }}</h2>
                     </div>
                     <div class="col-span-4 flex flex-col items-center justify-center ml-2">
-                        <p class="text-xs text-white">{{ list.totalContactCount }}</p>
+                        <p class="text-xs text-white">{{ list.contacts.length }}</p>
                         <p class="text-xs text-white">contacts</p>
                     </div>
                     <div class="col-span-4 text-right">
