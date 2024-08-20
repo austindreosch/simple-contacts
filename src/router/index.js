@@ -1,3 +1,4 @@
+import AboutView from '@/views/AboutView.vue';
 import AddContactView from '@/views/AddContactView.vue';
 import AuthView from '@/views/AuthView.vue';
 import HomeView from '@/views/HomeView.vue';
@@ -9,6 +10,7 @@ const routes = [
   { path: '/import', name: 'Import Contacts', component: ImportContactsView },
   { path: '/add', name: 'Add Invidividual Contact', component: AddContactView },
   { path: '/auth', name: 'Authenticate User', component: AuthView },
+  { path: '/about', name: 'About', component: AboutView },
 ];
 
 const router = createRouter({

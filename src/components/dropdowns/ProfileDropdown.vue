@@ -7,7 +7,7 @@
         @click="toggleDropdown"
         class="border-e px-4 py-[0.8rem] text-sm/none text-white items-center hover:bg-gray-600"
       >
-        austindreosch@gmail.com
+        {{userEmail}}
       </a>
 
       <button @click="toggleDropdown" class="h-full p-3  text-white hover:bg-gray-500 ">
@@ -87,8 +87,14 @@
 </template>
 
 <script setup>
+import { user } from '@/composables/getUser';
 import { dropdownStore } from '@/stores/dropdownStore';
 import { onMounted, onUnmounted, ref, watchEffect } from 'vue';
+
+import { computed } from 'vue';
+
+const userEmail = computed(() => user.value ? user.value.email : null);
+
 
 const isOpen = ref(false);
 const dropdownId = Symbol(); // Unique identifier for this dropdown
