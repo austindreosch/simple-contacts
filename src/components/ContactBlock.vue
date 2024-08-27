@@ -202,9 +202,15 @@ function isContactSelected(contact) {
                     <tbody class="divide-y divide-gray-200">
                         <!-- EACH CONTACT -->
                         <tr v-for="contact in paginatedContacts" :key="contact.id" @click="highlightContact(contact)" :class="{ 'bg-blue-100': contact.id === highlightedContactId }" class="cursor-pointer">
-                            <td class="px-4 py-2 text-left">
+                            <td class="px-4 py-2 text-left" @click.stop>
                                 <label class="sr-only" :for="'Row' + contact.id">Row {{ contact.id }}</label>
-                                <input class="size-4 rounded border-gray-300" type="checkbox" :id="'Row' + contact.id" :checked="isContactSelected(contact)" @change="toggleSelectContact(contact)"/>
+                                <input
+                                    class="size-4 rounded border-gray-300"
+                                    type="checkbox"
+                                    :id="'Row' + contact.id"
+                                    :checked="isContactSelected(contact)"
+                                    @click.stop="toggleSelectContact(contact)"
+                                />
                             </td>
                             <td class="px-4 py-2 text-left font-medium text-gray-900 truncate max-w-xs">{{ contact.firstName }} {{ contact.lastName }}</td>
                             <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">{{ contact.email }}</td>
