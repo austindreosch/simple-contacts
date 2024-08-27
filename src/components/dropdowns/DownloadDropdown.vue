@@ -9,8 +9,17 @@
 
     <div v-if="isOpen" class="absolute right-0 z-50 mt-1 w-44 divide-y divide-gray-100 rounded-md border border-gray-300 bg-white shadow-md" role="menu">
       <div class="p-2">
-        <a @click="handleClick('selectedContacts')" href="#" class="block rounded-md px-1 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-900 text-left" role="menuitem">
-          Selected Contacts
+        <a
+          @click.prevent="handleClick('selectedContacts')"
+          href="#"
+          class="block rounded-md px-1 py-2 text-sm text-left "
+          :class="isSelectedContactsEmpty ? 'text-gray-400 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
+          :aria-disabled="isSelectedContactsEmpty"
+          :tabindex="isSelectedContactsEmpty ? -1 : 0"
+          :disabled="isSelectedContactsEmpty"
+          role="menuitem"
+        >
+          Selected Contacts <span v-if="props.selectedContacts && props.selectedContacts.length > 0" class="text-[.71rem] text-gray-400">({{ props.selectedContacts.length }})</span>
         </a>
         <a @click="handleClick('allContacts')" href="#" class="block rounded-md px-1 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-900 text-left" role="menuitem">
           All Contacts
@@ -22,10 +31,26 @@
 
 <script setup>
 import { dropdownStore } from '@/stores/dropdownStore';
-import { onMounted, onUnmounted, ref, watchEffect } from 'vue';
+import Papa from 'papaparse';
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue';
+
+const props = defineProps({
+  selectedContacts: Array,
+  filteredContacts: Array,
+  contacts: Array
+});
 
 const isOpen = ref(false);
 const dropdownId = Symbol(); // Unique identifier for this dropdown
+
+// This computed property checks if there are no selected contacts
+const isSelectedContactsEmpty = computed(() => {
+  return props.selectedContacts.length === 0;
+});
+
+/* -----------------------------------------------------------
+  Methods
+----------------------------------------------------------- */
 
 const toggleDropdown = () => {
   if (dropdownStore.openDropdownId === dropdownId) {
@@ -42,23 +67,61 @@ const handleClickOutside = (event) => {
 };
 
 const handleClick = (action) => {
-  console.log(`${action} clicked`);
-  dropdownStore.clearOpenDropdown();
+  // Prevent action if no contacts are selected
+  if (action === 'selectedContacts' && isSelectedContactsEmpty.value) {
+    return;  // Do nothing if no contacts are selected
+  }
+  
+  if (action === 'selectedContacts') {
+    downloadContacts(props.selectedContacts);
+  } else if (action === 'allContacts') {
+    downloadContacts(props.contacts);
+  }
 };
+
+const downloadContacts = (contacts) => {
+  const csv = Papa.unparse(contacts.map(contact => ({
+    "First Name": contact.firstName,
+    "Last Name": contact.lastName,
+    "Email": contact.email,
+    "Phone": contact.phone,
+    "Note": contact.note,
+    "Tags": (contact.tags || []).join(', ')
+  })));
+
+  // Trigger the download
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'contacts.csv');
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+
+
+/* -----------------------------------------------------------
+  Event Listeners
+----------------------------------------------------------- */
+
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  console.log('Mounted, event listener added');
+  // console.log('Mounted, event listener added');
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
-  console.log('Unmounted, event listener removed');
+  // console.log('Unmounted, event listener removed');
 });
 
 watchEffect(() => {
   isOpen.value = dropdownStore.openDropdownId === dropdownId;
 });
+
 </script>
 
 

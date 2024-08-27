@@ -22,6 +22,12 @@
 import { dropdownStore } from '@/stores/dropdownStore';
 import { onMounted, onUnmounted, ref, watchEffect } from 'vue';
 
+const props = defineProps({
+  selectedContacts: Array,
+  filteredContacts: Array,
+  contacts: Array
+});
+
 const isOpen = ref(false);
 const dropdownId = Symbol(); // Unique identifier for this dropdown
 

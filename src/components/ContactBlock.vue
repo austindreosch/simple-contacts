@@ -14,6 +14,8 @@ const props = defineProps({
 const emit = defineEmits(['contactHighlighted']);
 const loading = ref(true);
 const highlightedContactId = ref(null);
+const selectedContacts = ref([]);
+
 
 /* -----------------------------------------------------------
     CONTACT SELECTION & FILTERING
@@ -63,6 +65,56 @@ function goToPage(page) {
     currentPage.value = page;
 }
 
+
+/* -----------------------------------------------------------
+    SELECTED CONTACTS HANDLING
+----------------------------------------------------------- */
+
+// Toggle the selection of a contact
+function toggleSelectContact(contact) {
+  const index = selectedContacts.value.findIndex(c => c.id === contact.id);
+  if (index === -1) {
+    selectedContacts.value.push(contact); // Store the full contact object
+  } else {
+    selectedContacts.value.splice(index, 1); // Deselect the contact
+  }
+}
+
+
+// Select or deselect all contacts on the current page
+function toggleSelectAllContacts() {
+  if (areAllContactsSelected.value) {
+    // Deselect all filtered contacts
+    selectedContacts.value = selectedContacts.value.filter(
+      selectedContact => !filteredContacts.value.some(contact => contact.id === selectedContact.id)
+    );
+  } else {
+    // Select all filtered contacts
+    filteredContacts.value.forEach(contact => {
+      if (!selectedContacts.value.some(selectedContact => selectedContact.id === contact.id)) {
+        selectedContacts.value.push(contact); // Add full contact object if not already selected
+      }
+    });
+  }
+}
+
+
+// Check if all contacts on the current page are selected
+const areAllContactsSelected = computed(() => {
+  return filteredContacts.value.every(contact =>
+    selectedContacts.value.some(selectedContact => selectedContact.id === contact.id)
+  );
+});
+
+
+// Check if a specific contact is selected
+function isContactSelected(contact) {
+  return selectedContacts.value.some(selectedContact => selectedContact.id === contact.id);
+}
+
+
+
+
 </script>
 
 
@@ -72,7 +124,7 @@ function goToPage(page) {
         <!-- Details -->
         <div class="flex justify-between items-end mb-2 px-1">
             <!-- <h1 class="text-left text-2xl">Contacts</h1> -->
-            <p class="text-xs">Currently showing {{ filteredContacts.length || 'N/A' }} of {{ props.contacts.length }} total contacts. <b> {{  '0' }} contacts selected.</b></p>            
+            <p class="text-xs">Currently showing {{ filteredContacts.length || 'N/A' }} of {{ props.contacts.length }} total contacts. <b> {{  selectedContacts.length }} contacts selected.</b></p>            
 
             <div class="flex items-center gap-2">
                 <!-- Search -->
@@ -114,9 +166,9 @@ function goToPage(page) {
 
                 <!-- Download, Email & Filter -->
                 <span class="inline-flex rounded-md border border-gray-200 bg-white shadow-sm">
-                    <EmailDropdown />
-                    <AddListDropdown />
-                    <DownloadDropdown />
+                    <EmailDropdown :selectedContacts="selectedContacts" :filteredContacts="filteredContacts" :contacts="contacts" />
+                    <!-- <AddListDropdown /> -->
+                    <DownloadDropdown :selectedContacts="selectedContacts" :filteredContacts="filteredContacts" :contacts="contacts" />
                     <FilterDropdown />
                 </span>
 
@@ -135,9 +187,10 @@ function goToPage(page) {
                 <table class="min-w-full table-fixed divide-y divide-gray-200 bg-white text-sm">
                     <thead class="bg-my-dark sticky text-white top-0">
                         <tr>
+                            <!-- TABLE HEADER -->
                             <th class="px-4 py-2 text-left">
                                 <label for="SelectAll" class="sr-only">Select All</label>
-                                <input type="checkbox" id="SelectAll" class="size-4 rounded border-gray-300" />
+                                <input type="checkbox" id="SelectAll" class="size-4 rounded border-gray-300" :checked="areAllContactsSelected" @change="toggleSelectAllContacts"/>
                             </th>
                             <th class="px-4 py-2 text-left font-medium ">Name</th>
                             <th class="px-4 py-2 text-left font-medium ">Email</th>
@@ -147,10 +200,11 @@ function goToPage(page) {
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
+                        <!-- EACH CONTACT -->
                         <tr v-for="contact in paginatedContacts" :key="contact.id" @click="highlightContact(contact)" :class="{ 'bg-blue-100': contact.id === highlightedContactId }" class="cursor-pointer">
                             <td class="px-4 py-2 text-left">
                                 <label class="sr-only" :for="'Row' + contact.id">Row {{ contact.id }}</label>
-                                <input class="size-4 rounded border-gray-300" type="checkbox" :id="'Row' + contact.id" />
+                                <input class="size-4 rounded border-gray-300" type="checkbox" :id="'Row' + contact.id" :checked="isContactSelected(contact)" @change="toggleSelectContact(contact)"/>
                             </td>
                             <td class="px-4 py-2 text-left font-medium text-gray-900 truncate max-w-xs">{{ contact.firstName }} {{ contact.lastName }}</td>
                             <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">{{ contact.email }}</td>
