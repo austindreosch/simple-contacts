@@ -7,8 +7,17 @@
 
     <div v-if="isOpen" class="absolute right-0 z-50 mt-1 w-44 divide-y divide-gray-100 rounded-md border border-gray-300 bg-white shadow-md" role="menu">
       <div class="p-2">
-        <a @click="handleClick('selectedContacts')" href="#" class="block rounded-md px-1 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-900 text-left" role="menuitem">
-          Selected Contacts
+        <a
+          @click.prevent="handleClick('selectedContacts')"
+          href="#"
+          class="block rounded-md px-1 py-2 text-sm text-left "
+          :class="isSelectedContactsEmpty ? 'text-gray-400 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'"
+          :aria-disabled="isSelectedContactsEmpty"
+          :tabindex="isSelectedContactsEmpty ? -1 : 0"
+          :disabled="isSelectedContactsEmpty"
+          role="menuitem"
+        >
+          Selected Contacts <span v-if="props.selectedContacts && props.selectedContacts.length > 0" class="text-[.71rem] text-gray-400">({{ props.selectedContacts.length }})</span>
         </a>
         <a @click="handleClick('allContacts')" href="#" class="block rounded-md px-1 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-900 text-left" role="menuitem">
           All Contacts
@@ -20,7 +29,7 @@
 
 <script setup>
 import { dropdownStore } from '@/stores/dropdownStore';
-import { onMounted, onUnmounted, ref, watchEffect } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue';
 
 const props = defineProps({
   selectedContacts: Array,
@@ -30,6 +39,16 @@ const props = defineProps({
 
 const isOpen = ref(false);
 const dropdownId = Symbol(); // Unique identifier for this dropdown
+
+
+const isSelectedContactsEmpty = computed(() => {
+  return props.selectedContacts.length === 0;
+});
+
+/* -----------------------------------------------------------
+  Methods
+----------------------------------------------------------- */
+
 
 const toggleDropdown = () => {
   if (dropdownStore.openDropdownId === dropdownId) {
@@ -46,18 +65,46 @@ const handleClickOutside = (event) => {
 };
 
 const handleClick = (action) => {
-  console.log(`${action} clicked`);
+  let emails = [];
+  
+  if (action === 'selectedContacts') {
+    emails = props.selectedContacts.map(contact => contact.email);
+  } else if (action === 'allContacts') {
+    emails = props.contacts.map(contact => contact.email);
+  }
+
+  // Check if emails are available before proceeding
+  if (emails.length === 0) {
+    console.warn("No email addresses available");
+    return;
+  }
+
+  // Create mailto link
+  const mailtoLink = `mailto:?bcc=${emails.join(',')}`;
+  
+  console.log(mailtoLink);
+  
+  // Open the email client
+  window.location.href = mailtoLink;
+  
+  // Clear dropdown
   dropdownStore.clearOpenDropdown();
 };
 
+
+
+/* -----------------------------------------------------------
+  Lifecycle Hooks
+----------------------------------------------------------- */
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  console.log('Mounted, event listener added');
+  // console.log('Mounted, event listener added');
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
-  console.log('Unmounted, event listener removed');
+  // console.log('Unmounted, event listener removed');
 });
 
 watchEffect(() => {
