@@ -3,10 +3,17 @@ import { db } from '@/assets/firebase';
 import PlusBoxIcon from '@/assets/plusbox-icon.svg';
 
 import { deleteDoc, doc } from "firebase/firestore";
-import { computed, defineEmits, defineProps, ref } from 'vue';
+import { computed, defineEmits, defineProps, ref, watch } from 'vue';
 
 const props = defineProps({ highlightedContact: Object});
 const emit = defineEmits(['contactUpdated']);
+
+let localContact = ref({ ...props.highlightedContact });
+
+watch(() => props.highlightedContact, (newVal) => {
+  localContact.value = { ...newVal };
+}, { deep: true });
+
 
 let highlightedContact = computed(() => props.highlightedContact || {
   firstName: null,
@@ -17,11 +24,20 @@ let highlightedContact = computed(() => props.highlightedContact || {
   tags: []
 });
 
+/* -----------------------------------------------------------
+    Methods
+----------------------------------------------------------- */
+
 const deleteContact = async () => {
     const contactRef = doc(db, 'contacts', highlightedContact.value.id);
     await deleteDoc(contactRef);
     emit('contactUpdated');
 };
+
+const saveChanges = () => {
+  emit('contactUpdated', localContact.value);
+};
+
 </script>
 
 <template>
@@ -74,11 +90,11 @@ const deleteContact = async () => {
                         id="firstName"
                         class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                         placeholder="First Name"
-                        v-model="highlightedContact.firstName"
+                        v-model="localContact.firstName"
                         />
                     
                         <span
-                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                         >
                         First Name
                         </span>
@@ -93,11 +109,11 @@ const deleteContact = async () => {
                         id="lastName"
                         class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                         placeholder="Last Name"
-                        v-model="highlightedContact.lastName"
+                        v-model="localContact.lastName"
                         />
                     
                         <span
-                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                         >
                         Last Name
                         </span>
@@ -116,11 +132,11 @@ const deleteContact = async () => {
                         id="email"
                         class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                         placeholder="Email"
-                        v-model="highlightedContact.email"
+                        v-model="localContact.email"
                         />
                     
                         <span
-                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                         >
                         Email
                         </span>
@@ -140,11 +156,11 @@ const deleteContact = async () => {
                             id="note"
                             class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                             placeholder="Note"
-                            v-model="highlightedContact.note"
+                            v-model="localContact.note"
                             />
                         
                             <span
-                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                             >
                             Note
                             </span>
@@ -161,11 +177,11 @@ const deleteContact = async () => {
                             id="phone"
                             class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                             placeholder="Phone"
-                            v-model="highlightedContact.phone"
+                            v-model="localContact.phone"
                             />
                         
                             <span
-                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                             >
                             Phone
                             </span>
@@ -178,19 +194,24 @@ const deleteContact = async () => {
                 <div class="relative block rounded-md border border-gray-200 shadow-sm p-2">
                     <!-- Edge-positioned label for tags -->
                     <label
-                        v-if="highlightedContact.id"
-                        class="absolute text-xs text-gray-700 bg-white px-1 -top-2.5 left-2.5 transform translate-y-0"
+                        v-if="localContact.id"
+                        class="absolute text-xs text-emerald-600 font-bold bg-white px-1 -top-2.5 left-2.5 transform translate-y-0"
                     >
                         Tags
                     </label>
                     <!-- Container for displaying tags and adding new ones -->
                     <div class="flex flex-wrap items-start gap-2 pt-1 min-h-8">
                         <!-- Existing tags displayed as spans -->
-                        <span v-for="tag in highlightedContact.tags" :key="tag" class="bg-my-teal text-white px-2 py-1 rounded-md text-sm">
+                        <span
+                            v-for="(tag, index) in [...new Set(localContact.tags)]"
+                            :key="tag + index"
+                            class="bg-my-teal text-white px-2 py-1 rounded-md text-sm"
+                            >
                             {{ tag }}
                         </span>
+
                         <!-- Placeholder button to simulate adding new tags -->
-                        <button v-if="highlightedContact.id" class=" pt-0.5" @click="openTagInput">
+                        <button v-if="localContact.id" class=" pt-0.5" @click="openTagInput">
                             <PlusBoxIcon class="text-my-teal" />
                         </button>
                     </div>
@@ -200,7 +221,8 @@ const deleteContact = async () => {
                 <div class="flex items-center justify-between">
                     <div class="text-2xs text-left ml-2 text-gray-400">
                         <p class="">Last Updated:</p>
-                        <p class="">{{ contact && contact.lastUpdated ? contact.lastUpdated : '9:36AM 9/23/2024' }}</p>
+                        <p class="">{{ localContact.lastUpdated ? localContact.lastUpdated : '9:36AM 9/23/2024' }}</p>
+
                     </div>
                     <button
                     type="submit"

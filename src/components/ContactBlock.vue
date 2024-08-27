@@ -16,6 +16,9 @@ const loading = ref(true);
 const highlightedContactId = ref(null);
 const selectedContacts = ref([]);
 
+const highlightedContact = computed(() => {
+  return props.contacts.find(contact => contact.id === highlightedContactId.value) || null;
+});
 
 /* -----------------------------------------------------------
     CONTACT SELECTION & FILTERING
