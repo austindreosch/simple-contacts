@@ -32,6 +32,9 @@ export default {
         'my-lightteal': '#79cdbc',
         'my-peach': '#fec6a4',
       },
+      fontFamily: {
+        sans: ['DM Sans', 'sans-serif'],
+      },
     },
   },
   plugins: [],

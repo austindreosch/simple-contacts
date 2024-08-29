@@ -5,6 +5,7 @@ import AddListDropdown from '@/components/dropdowns/AddListDropdown.vue';
 import DownloadDropdown from '@/components/dropdowns/DownloadDropdown.vue';
 import EmailDropdown from '@/components/dropdowns/EmailDropdown.vue';
 import FilterDropdown from '@/components/dropdowns/FilterDropdown.vue';
+import TagFilterDropdown from '@/components/dropdowns/TagFilterDropdown.vue';
 import { computed, defineEmits, defineProps, ref } from 'vue';
 
 const props = defineProps({
@@ -64,6 +65,7 @@ function prevPage() {
         currentPage.value--;
     }
 }
+
 function goToPage(page) {
     currentPage.value = page;
 }
@@ -172,7 +174,8 @@ function isContactSelected(contact) {
                     <EmailDropdown :selectedContacts="selectedContacts" :filteredContacts="filteredContacts" :contacts="contacts" />
                     <!-- <AddListDropdown /> -->
                     <DownloadDropdown :selectedContacts="selectedContacts" :filteredContacts="filteredContacts" :contacts="contacts" />
-                    <FilterDropdown />
+                    <!-- <FilterDropdown /> -->
+                    <TagFilterDropdown />
                 </span>
 
             </div>

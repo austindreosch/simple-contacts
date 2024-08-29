@@ -268,12 +268,12 @@ function checkImportRule() {
 
 <template>
     <div class="max-w-xl mx-auto justify-center">
-        <div class="flex justify-between items-end">
-            <h1 class="text-left text-2xl">Import CSV</h1>
+        <div class="flex justify-between items-end pt-12">
+            <!-- <h1 class="text-left text-2xl">Import CSV</h1> -->
             <!-- <p>Show Alert? {{ String(showAlert) }}</p> -->
 
         </div>
-        <div class="bg-gray-200 w-full px-6 py-8 h-86 space-y-6 rounded-md h-70">
+        <div class="bg-gray-50 w-full px-6 py-8 h-86 space-y-6 rounded-md h-70">
             <p class="">
                 To import your contacts, press the button below to upload your files in CSV format.
             </p>
@@ -281,7 +281,7 @@ function checkImportRule() {
                 You can also <a :href="dummyDataCSV" class="text-orange-500">download our sample contacts</a> to test the app.
             </p>
             <!-- Question 1 -->
-            <div class="border border-gray-300 p-2 rounded-md bg-gray-100">
+            <div class="border border-gray-300 p-2 rounded-md bg-gray-200">
                 <div class="bg-blue-400 rounded-md px-4 py-4 mb-3">
                     <p class="font-bold text-white "> When importing a contact with an email that is already assigned to a contact previously imported, how would you like to manage the import?</p>
                 </div>
@@ -297,7 +297,7 @@ function checkImportRule() {
                 </div>
             </div>
             <!-- Question 2 -->
-            <div class="border border-gray-300 p-2 rounded-md bg-gray-100">
+            <div class="border border-gray-300 p-2 rounded-md bg-gray-200">
                 <div class="bg-blue-400 rounded-md px-4 py-4 mb-3">
                     <p class="font-bold text-white "> Would you like to add your imports to a contact list?</p>
                 </div>

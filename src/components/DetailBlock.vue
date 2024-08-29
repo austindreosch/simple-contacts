@@ -1,7 +1,7 @@
 <script setup>
 import { db } from '@/assets/firebase';
+import listIcon from '@/assets/listicon.svg';
 import PlusBoxIcon from '@/assets/plusbox-icon.svg';
-
 import { deleteDoc, doc } from "firebase/firestore";
 import { computed, defineEmits, defineProps, ref, watch } from 'vue';
 
@@ -94,7 +94,7 @@ const saveChanges = () => {
                         />
                     
                         <span
-                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                         >
                         First Name
                         </span>
@@ -113,7 +113,7 @@ const saveChanges = () => {
                         />
                     
                         <span
-                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                         >
                         Last Name
                         </span>
@@ -136,7 +136,7 @@ const saveChanges = () => {
                         />
                     
                         <span
-                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                        class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                         >
                         Email
                         </span>
@@ -160,7 +160,7 @@ const saveChanges = () => {
                             />
                         
                             <span
-                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                             >
                             Note
                             </span>
@@ -181,7 +181,7 @@ const saveChanges = () => {
                             />
                         
                             <span
-                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-emerald-600 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
                             >
                             Phone
                             </span>
@@ -195,7 +195,7 @@ const saveChanges = () => {
                     <!-- Edge-positioned label for tags -->
                     <label
                         v-if="localContact.id"
-                        class="absolute text-xs text-emerald-600 font-bold bg-white px-1 -top-2.5 left-2.5 transform translate-y-0"
+                        class="absolute text-xs text-gray-700 font-bold bg-white px-1 -top-2.5 left-2.5 transform translate-y-0"
                     >
                         Tags
                     </label>
@@ -224,12 +224,19 @@ const saveChanges = () => {
                         <p class="">{{ localContact.lastUpdated ? localContact.lastUpdated : '9:36AM 9/23/2024' }}</p>
 
                     </div>
-                    <button
-                    type="submit"
-                    class="rounded-md bg-my-peach text-my-dark px-5 py-2.5 text-sm font-medium shadow"
-                    >
-                    Save Changes
-                    </button>
+                    <div class="flex space-x-2">
+                        <button class="rounded-md bg-gray-200 text-my-dark px-2 py-2 text-sm font-medium shadow-md">
+                            <listIcon class="w-6 h-6" />
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="rounded-md bg-my-peach text-my-dark px-5 py-2 text-sm font-medium shadow-md"
+                        >
+                            Save Changes
+                        </button>
+                    </div>
+
                 </div>
 
             </form>
