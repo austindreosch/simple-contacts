@@ -2,13 +2,15 @@
 import { db } from '@/assets/firebase';
 import listIcon from '@/assets/listicon.svg';
 import PlusBoxIcon from '@/assets/plusbox-icon.svg';
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'; // Import the modal component
 import { deleteDoc, doc } from "firebase/firestore";
 import { computed, defineEmits, defineProps, ref, watch } from 'vue';
 
 const props = defineProps({ highlightedContact: Object});
-const emit = defineEmits(['contactUpdated']);
+const emit = defineEmits(['contactUpdated', 'contactDeleted']);
 
 let localContact = ref({ ...props.highlightedContact });
+let showModal = ref(false);
 
 watch(() => props.highlightedContact, (newVal) => {
   localContact.value = { ...newVal };
@@ -31,12 +33,30 @@ let highlightedContact = computed(() => props.highlightedContact || {
 const deleteContact = async () => {
     const contactRef = doc(db, 'contacts', highlightedContact.value.id);
     await deleteDoc(contactRef);
-    emit('contactUpdated');
+    emit('contactDeleted');
 };
 
 const saveChanges = () => {
   emit('contactUpdated', localContact.value);
 };
+
+/* -----------------------------------------------------------
+    Modal Methods
+----------------------------------------------------------- */
+
+const confirmDelete = () => {
+  showModal.value = true;
+};
+
+const handleConfirm = () => {
+  showModal.value = false;
+  deleteContact();
+};
+
+const handleCancel = () => {
+  showModal.value = false;
+};
+
 
 </script>
 
@@ -44,8 +64,6 @@ const saveChanges = () => {
     <!-- Details -->
     <div class="flex justify-between items-end mb-2">
         <h1 class="text-left text-2xl">Details</h1>
-        <!-- <button class="text-xs mb-1 font-bold" @click="deleteContact">DELETE CONTACT</button> -->
-
 
         <div class="">
             <span class="inline-flex overflow-hidden rounded-md border bg-white shadow-sm">
@@ -56,20 +74,26 @@ const saveChanges = () => {
                 <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/></svg>
                 </button>
             
-                <button
-                class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
-                title="View Orders"
-                >
-                Delete
-                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M312-144q-29.7 0-50.85-21.15Q240-186.3 240-216v-480h-48v-72h192v-48h192v48h192v72h-48v479.57Q720-186 698.85-165T648-144H312Zm72-144h72v-336h-72v336Zm120 0h72v-336h-72v336Z"/></svg>    
+                <button @click="confirmDelete" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative" title="View Orders">
+                    Delete
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666">
+                        <path d="M312-144q-29.7 0-50.85-21.15Q240-186.3 240-216v-480h-48v-72h192v-48h192v48h192v72h-48v479.57Q720-186 698.85-165T648-144H312Zm72-144h72v-336h-72v336Zm120 0h72v-336h-72v336Z"/>
+                    </svg>
                 </button>
             </span>
         </div>
 
-
+        <ConfirmationModal
+        :show="showModal"
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this contact?"
+        @confirm="handleConfirm"
+        @cancel="handleCancel"
+        class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
+        />
     </div>
 
-
+    
 
 
 
@@ -225,7 +249,7 @@ const saveChanges = () => {
 
                     </div>
                     <div class="flex space-x-2">
-                        <button class="rounded-md bg-gray-200 text-my-dark px-2 py-2 text-sm font-medium shadow-md">
+                        <button class="rounded-md bg-gray-200 text-my-dark px-2 py-2 text-sm font-medium shadow-md cursor-not-allowed" disabled>
                             <listIcon class="w-6 h-6" />
                         </button>
 
@@ -242,5 +266,6 @@ const saveChanges = () => {
             </form>
         </div>
     </div>
+
 
 </template>

@@ -36,7 +36,8 @@
       <div class="p-2">
         <a
           href="#"
-          class="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 text-left"
+          class="block rounded-lg px-4 py-2 text-sm text-gray-300 hover:bg-gray-100 hover:text-gray-400 text-left cursor-not-allowed"
+          disabled
           role="menuitem"
           @click.prevent="handleClick('Settings')"
         >
@@ -81,23 +82,54 @@
         </form>
       </div>
     </div>
+
+
+
+
+    
+    
+    <ConfirmationModal
+      :show="showModal"
+      title="Confirm Deletion"
+      message="Are you sure you want to delete all contacts? This action cannot be undone."
+      @confirm="confirmDeleteAllContacts"
+      @cancel="cancelDeleteAllContacts"
+      class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
+    />
   </div>
 
 
 </template>
 
 <script setup>
+import { db } from '@/assets/firebase';
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
 import { user } from '@/composables/getUser';
 import { dropdownStore } from '@/stores/dropdownStore';
-import { onMounted, onUnmounted, ref, watchEffect } from 'vue';
-
-import { computed } from 'vue';
+import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue';
 
 const userEmail = computed(() => user.value ? user.value.email : null);
 
 
 const isOpen = ref(false);
+const showModal = ref(false);
 const dropdownId = Symbol(); // Unique identifier for this dropdown
+
+
+const handleClick = async (action) => {
+  console.log(`${action} clicked`);
+
+  if (action === 'Delete All Contacts') {
+    showModal.value = true;
+  } else if (action === 'Logout') {
+    // Implement logout logic here
+  } else if (action === 'Settings') {
+    // Implement settings logic here
+  }
+
+  dropdownStore.clearOpenDropdown(); // Close the dropdown after an action is clicked
+};
 
 const toggleDropdown = () => {
   if (dropdownStore.openDropdownId === dropdownId) {
@@ -113,11 +145,6 @@ const handleClickOutside = (event) => {
   }
 };
 
-const handleClick = (action) => {
-  console.log(`${action} clicked`);
-  dropdownStore.clearOpenDropdown();
-};
-
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   console.log('Mounted, event listener added');
@@ -131,6 +158,45 @@ onUnmounted(() => {
 watchEffect(() => {
   isOpen.value = dropdownStore.openDropdownId === dropdownId;
 });
+
+
+/* -----------------------------------------------------------
+  Delete All Contacts 
+----------------------------------------------------------- */
+
+async function deleteAllContacts(userId) {
+  try {
+    // Query all contacts for the specific user
+    const q = query(collection(db, 'contacts'), where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    // Iterate over each document and delete it
+    const deletePromises = querySnapshot.docs.map(docSnapshot => {
+      const contactRef = doc(db, 'contacts', docSnapshot.id);
+      return deleteDoc(contactRef);
+    });
+
+    // Wait for all deletions to complete
+    await Promise.all(deletePromises);
+
+    console.log(`All contacts for user ${userId} have been deleted.`);
+  } catch (error) {
+    console.error('Error deleting contacts:', error);
+  }
+}
+
+
+const confirmDeleteAllContacts = async () => {
+  await deleteAllContacts(user.value.uid);
+  alert('All contacts have been deleted.');
+  showModal.value = false;
+};
+
+const cancelDeleteAllContacts = () => {
+  showModal.value = false;
+};
+
+
 </script>
 
 

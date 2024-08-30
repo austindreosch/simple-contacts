@@ -12,37 +12,42 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const props = defineProps({ contacts: Array });
-const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
+
+
+
+const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1M3dbgvoswoscYwuk92i2iMyt_SXUz6OQ&export=download&authuser=0'
+// const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
-const dummyLists = [
-    {
-        id: 1,
-        name: 'Family',
-        totalContactCount: 10,
-        dateAdded: '09-01-2023'
-    },
-    {
-        id: 2,
-        name: 'Friends',
-        totalContactCount: 24,
-        dateAdded: '09-05-2023'
-    },
-    {
-        id: 3,
-        name: 'Work ',
-        totalContactCount: 87,
-        dateAdded: '09-10-2023'
-    },
-    {
-        id: 4,
-        name: 'Luxury Realtor List 4/1/23',
-        totalContactCount: 1002,
-        dateAdded: '09-25-2023',
-        contacts : [
-            {id: 1, dateAddedToList: '09-25-2023'},
-        ]
-    }
-];
+
+// const dummyLists = [
+//     {
+//         id: 1,
+//         name: 'Family',
+//         totalContactCount: 10,
+//         dateAdded: '09-01-2023'
+//     },
+//     {
+//         id: 2,
+//         name: 'Friends',
+//         totalContactCount: 24,
+//         dateAdded: '09-05-2023'
+//     },
+//     {
+//         id: 3,
+//         name: 'Work ',
+//         totalContactCount: 87,
+//         dateAdded: '09-10-2023'
+//     },
+//     {
+//         id: 4,
+//         name: 'Luxury Realtor List 4/1/23',
+//         totalContactCount: 1002,
+//         dateAdded: '09-25-2023',
+//         contacts : [
+//             {id: 1, dateAddedToList: '09-25-2023'},
+//         ]
+//     }
+// ];
 
 const updateDuplicatesFromCSV = ref(null);
 const showAlert = ref(false);

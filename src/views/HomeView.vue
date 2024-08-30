@@ -9,9 +9,10 @@ import { ref, watch } from 'vue';
 
 const contacts = ref([]);
 const highlightedContact = ref(null);
+const userTagList = ref([]);
 
 /* -----------------------------------------------------------
-USER CONTACTS MANAGED IN PARENT COMPONENT
+LOAD USER CONTACTS (SENT TO CHILDREN COMPONENTS)
 ----------------------------------------------------------- */
 async function loadContacts() {
   if (user.value) {
@@ -22,7 +23,7 @@ async function loadContacts() {
       ...doc.data()
     }));
   } else {
-    console.log('User is not authenticated');
+    console.log('Cannot load contacts. User is not authenticated');
   }
 }
 
@@ -33,13 +34,43 @@ function handleContactHighlighted(contact) {
 function refreshContacts() {
     console.log('refreshing contacts', contacts);
     loadContacts();
+    loadTags();
+}
+
+
+function clearHighlightedContact() {
+    highlightedContact.value = null;
+    refreshContacts();
 }
 
 watch(user, async (newUser) => {
   if (newUser) {
     await loadContacts();
+    await loadTags();
   }
 });
+
+
+/* -----------------------------------------------------------
+  LOAD USER TAGS (SENT TO CHILDREN COMPONENTS)
+----------------------------------------------------------- */
+async function loadTags() {
+  if (user.value) {
+    try {
+      const q = query(collection(db, 'tags'), where('userId', '==', user.value.uid));
+      const querySnapshot = await getDocs(q);
+      userTagList.value = querySnapshot.docs.map(doc => doc.data().tagName);
+      
+      console.log('Tags loaded:', userTagList.value);
+    } catch (error) {
+      console.error('Error loading tags:', error);
+    }
+  } else {
+    console.log('Cannot load tags. User is not authenticated');
+  }
+}
+
+
 
 </script>
 
@@ -50,7 +81,7 @@ watch(user, async (newUser) => {
           <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted"/>
       </div>
       <div class="max-w-sm overflow-y-auto">
-          <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts"/>
+          <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact"/>
           <ListsBlock />
       </div>
   </div>
