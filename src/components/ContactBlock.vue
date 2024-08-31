@@ -188,7 +188,8 @@ function isContactSelected(contact) {
 
 
         <!-- TABLE -->
-        <div class="flex-grow overflow-hidden rounded-lg border border-gray-300 shadow-md my-0 mr-1 mb-1 flex flex-col">
+        <div class="flex-grow overflow-visible rounded-lg border border-gray-300 shadow-md my-0 mr-1 mb-1 flex flex-col z-1">
+
             <div class="overflow-x-auto">
                 <table class="min-w-full table-fixed divide-y divide-gray-200 bg-white text-sm">
                     <thead class="bg-my-dark sticky text-white top-0">

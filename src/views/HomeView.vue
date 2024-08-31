@@ -80,7 +80,7 @@ async function loadTags() {
       <div class="flex-grow overflow-y-auto mr-2">
           <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted"/>
       </div>
-      <div class="max-w-sm overflow-y-auto">
+      <div class="max-w-sm ">
           <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact"/>
           <ListsBlock />
       </div>

@@ -1,7 +1,7 @@
 <script setup>
 import { db } from '@/assets/firebase';
 import listIcon from '@/assets/listicon.svg';
-import PlusBoxIcon from '@/assets/plusbox-icon.svg';
+import AddTagButton from '@/components/dropdowns/AddTagButton.vue';
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'; // Import the modal component
 import { deleteDoc, doc } from "firebase/firestore";
 import { computed, defineEmits, defineProps, ref, watch } from 'vue';
@@ -100,7 +100,7 @@ const handleCancel = () => {
 
     <!-- NEW STUFF -->
     <div class="mx-auto max-w-screen-xl ">
-        <div class="rounded-lg  p-4  bg-white border border-gray-300 shadow-md">
+        <div class="rounded-lg p-4 bg-white border border-gray-300 shadow-md overflow-visible">
             <form action="#" class="space-y-4 mt-2">
 
                 <!-- First / Last Name -->
@@ -215,7 +215,7 @@ const handleCancel = () => {
                 </div>
 
                 <!-- Tags -->
-                <div class="relative block rounded-md border border-gray-200 shadow-sm p-2">
+                <div class="relative block rounded-md border border-gray-200 shadow-sm p-2 overflow-visible">
                     <!-- Edge-positioned label for tags -->
                     <label
                         v-if="localContact.id"
@@ -235,9 +235,10 @@ const handleCancel = () => {
                         </span>
 
                         <!-- Placeholder button to simulate adding new tags -->
-                        <button v-if="localContact.id" class=" pt-0.5" @click="openTagInput">
+                        <!-- <button v-if="localContact.id" class=" pt-0.5" @click="openTagInput">
                             <PlusBoxIcon class="text-my-teal" />
-                        </button>
+                        </button> -->
+                        <AddTagButton/>
                     </div>
                 </div>
 
@@ -252,6 +253,8 @@ const handleCancel = () => {
                         <button class="rounded-md bg-gray-200 text-my-dark px-2 py-2 text-sm font-medium shadow-md cursor-not-allowed" disabled>
                             <listIcon class="w-6 h-6" />
                         </button>
+
+                        
 
                         <button
                             type="submit"

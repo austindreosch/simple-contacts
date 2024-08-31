@@ -12,42 +12,12 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const props = defineProps({ contacts: Array });
-
+const tagToContactsMap = new Map();
 
 
 const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1M3dbgvoswoscYwuk92i2iMyt_SXUz6OQ&export=download&authuser=0'
-// const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
 
-// const dummyLists = [
-//     {
-//         id: 1,
-//         name: 'Family',
-//         totalContactCount: 10,
-//         dateAdded: '09-01-2023'
-//     },
-//     {
-//         id: 2,
-//         name: 'Friends',
-//         totalContactCount: 24,
-//         dateAdded: '09-05-2023'
-//     },
-//     {
-//         id: 3,
-//         name: 'Work ',
-//         totalContactCount: 87,
-//         dateAdded: '09-10-2023'
-//     },
-//     {
-//         id: 4,
-//         name: 'Luxury Realtor List 4/1/23',
-//         totalContactCount: 1002,
-//         dateAdded: '09-25-2023',
-//         contacts : [
-//             {id: 1, dateAddedToList: '09-25-2023'},
-//         ]
-//     }
-// ];
 
 const updateDuplicatesFromCSV = ref(null);
 const showAlert = ref(false);
@@ -169,6 +139,18 @@ const processData = async (csvData, headers) => {
         // Note & Tags
         const note = noteIndex !== -1 ? row[noteHeader] || '' : '';
         const tags = tagsIndex !== -1 ? (row[tagsHeader] || '').split(',').map(tag => tag.trim()) : [];
+ 
+        // Gather tags and associated contacts using contact document IDs
+        tags.forEach(tag => {
+            if (!tagToContactsMap.has(tag)) {
+                tagToContactsMap.set(tag, []);
+            }
+            const contactId = existingContacts.get(row[emailHeader]);
+            if (contactId) {
+                tagToContactsMap.get(tag).push(contactId); 
+            }
+        });
+        
 
         return { email, phone, firstName, lastName, note, tags };
     });
@@ -185,11 +167,12 @@ function importCSV(event) {
         header: true,      
         complete: async function(results) {
             const headers = results.meta.fields;
-            const processedData = await processData(results.data, headers);
-            console.log('processedData:', processedData);
+            // const processedData = await processData(results.data, headers);
+            // console.log('processedData:', processedData);
 
             const existingContacts = new Map((props.contacts || []).map(contact => [contact.email, contact.id]));
-            console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
+            // console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
+            const processedData = await processData(results.data, headers, existingContacts);
 
             let listRef;
             if (selectedList.value !== 'Select a list...' && selectedList.value) {
@@ -253,6 +236,29 @@ function importCSV(event) {
                 console.log('No valid contacts processed.');
             }
 
+
+
+            /* -----------------------------------------------------------
+            *  Add tags and associated contacts to the tags collection
+            ----------------------------------------------------------- */
+
+            for (const [tag, contactIds] of tagToContactsMap) {
+                const tagRef = collection(db, "tags");
+                await addDoc(tagRef, {
+                    userId: user.value.uid,
+                    tagName: tag,
+                    contacts: contactIds,  // List of associated contact document IDs
+                    dateAdded: new Date().toISOString(),
+                });
+                console.log(`Tag added: ${tag} with contacts: ${contactIds}`);
+            }
+
+
+
+
+
+
+
             router.push('/');
         },
         error: function(error) {
@@ -272,13 +278,13 @@ function checkImportRule() {
 </script>
 
 <template>
-    <div class="max-w-xl mx-auto justify-center">
+    <div class="max-w-[38rem] mx-auto justify-center">
         <div class="flex justify-between items-end pt-12">
             <!-- <h1 class="text-left text-2xl">Import CSV</h1> -->
             <!-- <p>Show Alert? {{ String(showAlert) }}</p> -->
 
         </div>
-        <div class="bg-gray-50 w-full px-6 py-8 h-86 space-y-6 rounded-md h-70">
+        <div class="bg-white w-full px-6 py-8 h-86 space-y-6 rounded-md h-70 border border-gray-200">
             <p class="">
                 To import your contacts, press the button below to upload your files in CSV format.
             </p>
@@ -309,17 +315,17 @@ function checkImportRule() {
                 <div class="flex justify-center space-x-4">
                     <div>
                         <label for="addList" class="flex justify-between mr-2">
-                            Add to new list: 
+                            Add a new list: 
                             <FullCheckmark class="text-green-500" v-if="!(newListName === '')"/>
                         </label>
-                        <input type="text" id="addList" v-model="newListName" class="mr-1 border rounded-sm border-gray-500 ">
+                        <input type="text" id="addList" v-model="newListName" class="mr-1 border rounded-sm border-gray-500 h-8">
                     </div>
-                    <div>
+                    <div class="pr-11">
                         <label for="selectList" class="flex justify-between mr-2">
                             Add to existing list: 
                             <FullCheckmark class="text-green-500 fill-current" v-if="!(selectedList === 'Select a list...')"/>
                         </label>
-                        <select id="selectList" v-model="selectedList" class="mr-1 border rounded-sm border-gray-500">
+                        <select id="selectList" v-model="selectedList" class="border rounded-sm border-gray-500 h-8 w-[130%]">
                             <option  >Select a list...</option>
                             <option v-for="list in dummyLists" :key="list.id" :value="list.id">{{ list.name }}</option>
                         </select>
