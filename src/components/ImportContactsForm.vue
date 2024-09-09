@@ -12,15 +12,23 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const props = defineProps({ contacts: Array });
-const tagToContactsMap = new Map();
+const tagToContactsMap = new Map(); 
 
 
 const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1M3dbgvoswoscYwuk92i2iMyt_SXUz6OQ&export=download&authuser=0'
+// const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
-
 
 const updateDuplicatesFromCSV = ref(null);
 const showAlert = ref(false);
+
+function checkImportRule() {
+    if (updateDuplicatesFromCSV.value === null) {
+        showAlert.value = true;
+    } else {
+        showAlert.value = false;
+    }
+}
 /* ------------------------------------------------------
      Logic for contact list import
 -------------------------------------------------------- */
@@ -139,18 +147,6 @@ const processData = async (csvData, headers) => {
         // Note & Tags
         const note = noteIndex !== -1 ? row[noteHeader] || '' : '';
         const tags = tagsIndex !== -1 ? (row[tagsHeader] || '').split(',').map(tag => tag.trim()) : [];
- 
-        // Gather tags and associated contacts using contact document IDs
-        tags.forEach(tag => {
-            if (!tagToContactsMap.has(tag)) {
-                tagToContactsMap.set(tag, []);
-            }
-            const contactId = existingContacts.get(row[emailHeader]);
-            if (contactId) {
-                tagToContactsMap.get(tag).push(contactId); 
-            }
-        });
-        
 
         return { email, phone, firstName, lastName, note, tags };
     });
@@ -158,133 +154,243 @@ const processData = async (csvData, headers) => {
     return processedValues;
 }
 
+// function importCSV(event) {
+
+//     // First Name, Last Name, Email, Note, Phone, Tags
+//     const file = event.target.files[0];
+
+//     Papa.parse(file, {
+//         header: true,      
+//         complete: async function(results) {
+//             const headers = results.meta.fields;
+//             const processedData = await processData(results.data, headers);
+//             console.log('processedData:', processedData);
+
+//             const existingContacts = new Map((props.contacts || []).map(contact => [contact.email, contact.id]));
+//             console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
+
+//             let listRef;
+//             if (selectedList.value !== 'Select a list...' && selectedList.value) {
+//                 listRef = doc(db, 'lists', selectedList.value);
+//                 await updateDoc(listRef, {
+//                     lastUpdated: new Date().toISOString()
+//                 });
+//             } else if (newListName.value !== '') {
+//                 const newList = await addDoc(collection(db, "lists"), {
+//                     userId: user.value.uid,
+//                     listName: newListName.value,
+//                     dateAdded: new Date().toISOString(),
+//                     lastUpdated: new Date().toISOString(),
+//                     contacts: []
+//                 });
+//                 listRef = doc(db, 'lists', newList.id);
+//             }
+
+//             if (processedData && processedData.length > 0) { // Safeguard
+//                 processedData.forEach(async (contact) => {
+//                     if (existingContacts.has(contact.email)) {
+//                         if (updateDuplicatesFromCSV.value === true) {
+//                             const contactId = existingContacts.get(contact.email);
+//                             const contactRef = doc(db, 'contacts', contactId);
+//                             await updateDoc(contactRef, {
+//                                 userId: user.value.uid,
+//                                 phone: contact.phone,
+//                                 firstName: contact.firstName,
+//                                 lastName: contact.lastName,
+//                                 note: contact.note,
+//                                 tags: contact.tags
+//                             });
+//                             console.log('Contact updated:', contactId);
+//                         } else {
+//                             console.log('Contact found but not updated:', contact.email);
+//                         }
+//                     } else {
+//                         const docRef = await addDoc(collection(db, "contacts"), {
+//                             userId: user.value.uid,
+//                             email: contact.email,
+//                             phone: contact.phone,
+//                             firstName: contact.firstName,
+//                             lastName: contact.lastName,
+//                             note: contact.note,
+//                             tags: contact.tags
+//                         });
+//                         console.log('Contact added with ID:', docRef.id);
+
+//                         if (listRef) {
+//                             const listDoc = await getDoc(listRef);
+//                             if (listDoc.exists()) {
+//                                 const listData = listDoc.data();
+//                                 listData.contacts.push(docRef.id);
+//                                 await updateDoc(listRef, { contacts: listData.contacts });
+//                                 console.log('Contact added to list:', listRef.id);
+//                             }
+//                         }
+//                     }
+//                 });
+//             } else {
+//                 console.log('No valid contacts processed.');
+//             }
+
+//             /* -----------------------------------------------------------
+//               TAG THINGS
+//             ----------------------------------------------------------- */
+
+
+
+
+//             router.push('/');
+//         },
+//         error: function(error) {
+//             console.error('Error parsing CSV:', error);
+//         }
+//     });
+// }
+
+
 function importCSV(event) {
 
-    // First Name, Last Name, Email, Note, Phone, Tags
-    const file = event.target.files[0];
+// First Name, Last Name, Email, Note, Phone, Tags
+const file = event.target.files[0];
 
-    Papa.parse(file, {
-        header: true,      
-        complete: async function(results) {
-            const headers = results.meta.fields;
-            // const processedData = await processData(results.data, headers);
-            // console.log('processedData:', processedData);
+Papa.parse(file, {
+    header: true,      
+    complete: async function(results) {
+        const headers = results.meta.fields;
+        const processedData = await processData(results.data, headers);
+        console.log('processedData:', processedData);
 
-            const existingContacts = new Map((props.contacts || []).map(contact => [contact.email, contact.id]));
-            // console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
-            const processedData = await processData(results.data, headers, existingContacts);
+        const existingContacts = new Map((props.contacts || []).map(contact => [contact.email, contact.id]));
+        console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
 
-            let listRef;
-            if (selectedList.value !== 'Select a list...' && selectedList.value) {
-                listRef = doc(db, 'lists', selectedList.value);
-                await updateDoc(listRef, {
-                    lastUpdated: new Date().toISOString()
-                });
-            } else if (newListName.value !== '') {
-                const newList = await addDoc(collection(db, "lists"), {
-                    userId: user.value.uid,
-                    listName: newListName.value,
-                    dateAdded: new Date().toISOString(),
-                    lastUpdated: new Date().toISOString(),
-                    contacts: []
-                });
-                listRef = doc(db, 'lists', newList.id);
-            }
+        let listRef;
+        if (selectedList.value !== 'Select a list...' && selectedList.value) {
+            listRef = doc(db, 'lists', selectedList.value);
+            await updateDoc(listRef, {
+                lastUpdated: new Date().toISOString()
+            });
+        } else if (newListName.value !== '') {
+            const newList = await addDoc(collection(db, "lists"), {
+                userId: user.value.uid,
+                listName: newListName.value,
+                dateAdded: new Date().toISOString(),
+                lastUpdated: new Date().toISOString(),
+                contacts: []
+            });
+            listRef = doc(db, 'lists', newList.id);
+        }
 
-            if (processedData && processedData.length > 0) { // Safeguard
-                processedData.forEach(async (contact) => {
-                    if (existingContacts.has(contact.email)) {
-                        if (updateDuplicatesFromCSV.value === true) {
-                            const contactId = existingContacts.get(contact.email);
-                            const contactRef = doc(db, 'contacts', contactId);
-                            await updateDoc(contactRef, {
-                                userId: user.value.uid,
-                                phone: contact.phone,
-                                firstName: contact.firstName,
-                                lastName: contact.lastName,
-                                note: contact.note,
-                                tags: contact.tags
-                            });
-                            console.log('Contact updated:', contactId);
-                        } else {
-                            console.log('Contact found but not updated:', contact.email);
-                        }
-                    } else {
-                        const docRef = await addDoc(collection(db, "contacts"), {
+        if (processedData && processedData.length > 0) { // Safeguard
+            processedData.forEach(async (contact) => {
+                if (existingContacts.has(contact.email)) {
+                    if (updateDuplicatesFromCSV.value === true) {
+                        const contactId = existingContacts.get(contact.email);
+                        const contactRef = doc(db, 'contacts', contactId);
+                        await updateDoc(contactRef, {
                             userId: user.value.uid,
-                            email: contact.email,
                             phone: contact.phone,
                             firstName: contact.firstName,
                             lastName: contact.lastName,
                             note: contact.note,
                             tags: contact.tags
                         });
-                        console.log('Contact added with ID:', docRef.id);
+                        console.log('Contact updated:', contactId);
+                    } else {
+                        console.log('Contact found but not updated:', contact.email);
+                    }
+                } else {
+                    const docRef = await addDoc(collection(db, "contacts"), {
+                        userId: user.value.uid,
+                        email: contact.email,
+                        phone: contact.phone,
+                        firstName: contact.firstName,
+                        lastName: contact.lastName,
+                        note: contact.note,
+                        tags: contact.tags
+                    });
+                    console.log('Contact added with ID:', docRef.id);
 
-                        if (listRef) {
-                            const listDoc = await getDoc(listRef);
-                            if (listDoc.exists()) {
-                                const listData = listDoc.data();
-                                listData.contacts.push(docRef.id);
-                                await updateDoc(listRef, { contacts: listData.contacts });
-                                console.log('Contact added to list:', listRef.id);
-                            }
+                    if (listRef) {
+                        const listDoc = await getDoc(listRef);
+                        if (listDoc.exists()) {
+                            const listData = listDoc.data();
+                            listData.contacts.push(docRef.id);
+                            await updateDoc(listRef, { contacts: listData.contacts });
+                            console.log('Contact added to list:', listRef.id);
                         }
                     }
-                });
+                }
+            });
+        } else {
+            console.log('No valid contacts processed.');
+        }
+
+        /* -----------------------------------------------------------
+          TAG MAP THINGS
+        ----------------------------------------------------------- */
+
+        for (const [tag, contactIds] of tagToContactsMap) {
+            const tagRef = collection(db, "tags");
+
+            // Check if the tag already exists for this user
+            const q = query(tagRef, where("userId", "==", user.value.uid), where("tagName", "==", tag));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                // If tag exists, update the contacts array
+                for (const doc of querySnapshot.docs) {
+                    const existingTag = doc.data();
+                    const existingContacts = new Set(existingTag.contacts);  // Convert to set to avoid duplicates
+                    contactIds.forEach(contactId => existingContacts.add(contactId));
+                    
+                    // Update the tag document
+                    await updateDoc(doc.ref, {
+                        contacts: Array.from(existingContacts),
+                        lastUpdated: new Date().toISOString(),
+                    });
+                    console.log(`Updated tag: ${tag} with new contacts: ${contactIds}`);
+                }
             } else {
-                console.log('No valid contacts processed.');
-            }
-
-
-
-            /* -----------------------------------------------------------
-            *  Add tags and associated contacts to the tags collection
-            ----------------------------------------------------------- */
-
-            for (const [tag, contactIds] of tagToContactsMap) {
-                const tagRef = collection(db, "tags");
-                await addDoc(tagRef, {
+                // Prepare the data, ensuring no undefined values
+                const tagData = {
                     userId: user.value.uid,
                     tagName: tag,
-                    contacts: contactIds,  // List of associated contact document IDs
+                    userEmail: user.value.email, 
+                    contacts: contactIds,
                     dateAdded: new Date().toISOString(),
-                });
+                    lastUpdated: new Date().toISOString(),
+                };
+
+
+                await addDoc(tagRef, tagData);
                 console.log(`Tag added: ${tag} with contacts: ${contactIds}`);
+
             }
-
-
-
-
-
-
-
-            router.push('/');
-        },
-        error: function(error) {
-            console.error('Error parsing CSV:', error);
         }
-    });
+        
+
+        router.push('/');
+    },
+    error: function(error) {
+        console.error('Error parsing CSV:', error);
+    }
+});
 }
 
-function checkImportRule() {
-    if (updateDuplicatesFromCSV.value === null) {
-        showAlert.value = true;
-    } else {
-        showAlert.value = false;
-    }
-}
+
+
+
+
 
 </script>
 
 <template>
-    <div class="max-w-[38rem] mx-auto justify-center">
+    <div class="max-w-xl mx-auto justify-center">
         <div class="flex justify-between items-end pt-12">
             <!-- <h1 class="text-left text-2xl">Import CSV</h1> -->
             <!-- <p>Show Alert? {{ String(showAlert) }}</p> -->
 
         </div>
-        <div class="bg-white w-full px-6 py-8 h-86 space-y-6 rounded-md h-70 border border-gray-200">
+        <div class="bg-gray-50 w-full px-6 py-8 h-86 space-y-6 rounded-md h-70">
             <p class="">
                 To import your contacts, press the button below to upload your files in CSV format.
             </p>
@@ -315,17 +421,17 @@ function checkImportRule() {
                 <div class="flex justify-center space-x-4">
                     <div>
                         <label for="addList" class="flex justify-between mr-2">
-                            Add a new list: 
+                            Add to new list: 
                             <FullCheckmark class="text-green-500" v-if="!(newListName === '')"/>
                         </label>
-                        <input type="text" id="addList" v-model="newListName" class="mr-1 border rounded-sm border-gray-500 h-8">
+                        <input type="text" id="addList" v-model="newListName" class="mr-1 border rounded-sm border-gray-500 ">
                     </div>
-                    <div class="pr-11">
+                    <div>
                         <label for="selectList" class="flex justify-between mr-2">
                             Add to existing list: 
                             <FullCheckmark class="text-green-500 fill-current" v-if="!(selectedList === 'Select a list...')"/>
                         </label>
-                        <select id="selectList" v-model="selectedList" class="border rounded-sm border-gray-500 h-8 w-[130%]">
+                        <select id="selectList" v-model="selectedList" class="mr-1 border rounded-sm border-gray-500">
                             <option  >Select a list...</option>
                             <option v-for="list in dummyLists" :key="list.id" :value="list.id">{{ list.name }}</option>
                         </select>

@@ -10,12 +10,10 @@ const props = defineProps({ highlightedContact: Object});
 const emit = defineEmits(['contactUpdated', 'contactDeleted']);
 
 let localContact = ref({ ...props.highlightedContact });
-let showModal = ref(false);
 
 watch(() => props.highlightedContact, (newVal) => {
   localContact.value = { ...newVal };
 }, { deep: true });
-
 
 let highlightedContact = computed(() => props.highlightedContact || {
   firstName: null,
@@ -26,9 +24,24 @@ let highlightedContact = computed(() => props.highlightedContact || {
   tags: []
 });
 
+// Will be replaced with actual data from the database
+const dummyLists = ref([
+  { name: 'Friends' },
+  { name: 'Coworkers' },
+  { name: 'VIP Clients' }
+]);
+
+
 /* -----------------------------------------------------------
-    Methods
+  Edit Contact Logic
 ----------------------------------------------------------- */
+// 
+
+let isEditing = ref(false); 
+
+const startEditing = () => {
+  isEditing.value = true;
+};
 
 const deleteContact = async () => {
     const contactRef = doc(db, 'contacts', highlightedContact.value.id);
@@ -38,11 +51,14 @@ const deleteContact = async () => {
 
 const saveChanges = () => {
   emit('contactUpdated', localContact.value);
+  isEditing.value = false;
 };
 
+
 /* -----------------------------------------------------------
-    Modal Methods
+    Modal Logic
 ----------------------------------------------------------- */
+let showModal = ref(false);
 
 const confirmDelete = () => {
   showModal.value = true;
@@ -58,6 +74,20 @@ const handleCancel = () => {
 };
 
 
+/* -----------------------------------------------------------
+  Popup Logic
+----------------------------------------------------------- */
+const showListsPopup = ref(false);
+
+const showPopup = () => {
+  showListsPopup.value = true;
+};
+
+const hidePopup = () => {
+  showListsPopup.value = false;
+};
+
+
 </script>
 
 <template>
@@ -68,10 +98,12 @@ const handleCancel = () => {
         <div class="">
             <span class="inline-flex overflow-hidden rounded-md border bg-white shadow-sm">
                 <button
-                class="flex items-center gap-1  border-e px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative"
+                class="flex items-center gap-1 border-e px-3 py-2 text-sm font-medium focus:relative"
+                :class="isEditing ? 'bg-my-teal text-white' : ''"
+                @click="startEditing"
                 >
                 Edit
-                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/></svg>
+                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" :fill="isEditing ? '#ffffff' : '#666666'" ><path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/></svg>
                 </button>
             
                 <button @click="confirmDelete" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative" title="View Orders">
@@ -99,9 +131,9 @@ const handleCancel = () => {
 
 
     <!-- NEW STUFF -->
-    <div class="mx-auto max-w-screen-xl ">
+    <div class="mx-auto max-w-screen-xl" >
         <div class="rounded-lg p-4 bg-white border border-gray-300 shadow-md overflow-visible">
-            <form action="#" class="space-y-4 mt-2">
+            <form @submit.prevent="saveChanges" class="space-y-4 mt-2">
 
                 <!-- First / Last Name -->
                 <div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
@@ -115,6 +147,8 @@ const handleCancel = () => {
                         class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                         placeholder="First Name"
                         v-model="localContact.firstName"
+                        :disabled="!isEditing"
+                        :class="{ 'opacity-50': !isEditing }"
                         />
                     
                         <span
@@ -134,6 +168,8 @@ const handleCancel = () => {
                         class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                         placeholder="Last Name"
                         v-model="localContact.lastName"
+                        :disabled="!isEditing"
+                        :class="{ 'opacity-50': !isEditing }"
                         />
                     
                         <span
@@ -157,6 +193,8 @@ const handleCancel = () => {
                         class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                         placeholder="Email"
                         v-model="localContact.email"
+                        :disabled="!isEditing"
+                        :class="{ 'opacity-50': !isEditing }"
                         />
                     
                         <span
@@ -181,6 +219,8 @@ const handleCancel = () => {
                             class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                             placeholder="Note"
                             v-model="localContact.note"
+                            :disabled="!isEditing"
+                            :class="{ 'opacity-50': !isEditing }"
                             />
                         
                             <span
@@ -202,6 +242,8 @@ const handleCancel = () => {
                             class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                             placeholder="Phone"
                             v-model="localContact.phone"
+                            :disabled="!isEditing"
+                            :class="{ 'opacity-50': !isEditing }"
                             />
                         
                             <span
@@ -215,7 +257,8 @@ const handleCancel = () => {
                 </div>
 
                 <!-- Tags -->
-                <div class="relative block rounded-md border border-gray-200 shadow-sm p-2 overflow-visible">
+                <div class="relative block rounded-md border-2 border-gray-200 shadow-sm p-2 overflow-visible" :disabled="!isEditing"
+                :class="{ 'opacity-50': !isEditing }">
                     <!-- Edge-positioned label for tags -->
                     <label
                         v-if="localContact.id"
@@ -223,9 +266,11 @@ const handleCancel = () => {
                     >
                         Tags
                     </label>
+                    
                     <!-- Container for displaying tags and adding new ones -->
                     <div class="flex flex-wrap items-start gap-2 pt-1 min-h-8">
                         <!-- Existing tags displayed as spans -->
+                         
                         <span
                             v-for="(tag, index) in [...new Set(localContact.tags)]"
                             :key="tag + index"
@@ -238,7 +283,7 @@ const handleCancel = () => {
                         <!-- <button v-if="localContact.id" class=" pt-0.5" @click="openTagInput">
                             <PlusBoxIcon class="text-my-teal" />
                         </button> -->
-                        <AddTagButton/>
+                        <AddTagButton v-if="props.highlightedContact"/>
                     </div>
                 </div>
 
@@ -250,15 +295,38 @@ const handleCancel = () => {
 
                     </div>
                     <div class="flex space-x-2">
-                        <button class="rounded-md bg-gray-200 text-my-dark px-2 py-2 text-sm font-medium shadow-md cursor-not-allowed" disabled>
+                        <div class="relative inline-block">
+                            <!-- Button with hover events to show/hide the list popup -->
+                            <div
+                            class="rounded-md bg-gray-200 text-my-dark px-2 py-2 text-sm font-medium shadow-md"
+                            @mouseover="showPopup"
+                            @mouseleave="hidePopup"
+                            >
                             <listIcon class="w-6 h-6" />
-                        </button>
+                            </div>
+
+                            <!-- Popup for list display -->
+                            <div
+                            v-if="showListsPopup"
+                            class="absolute z-10 bg-white border border-gray-300 shadow-lg rounded-md p-2 w-48 "
+                            style="left: -12.2rem; top: 0rem;" 
+                            >
+                            <p class="text-gray-700 font-bold text-sm">Assigned Lists</p>
+                            <hr class="my-1 border-gray-300" />
+                            <ul>
+                                <li v-for="list in dummyLists" :key="list.name" class="text-gray-600 text-sm">
+                                {{ list.name }}
+                                </li>
+                            </ul>
+                            </div>
+                        </div>
 
                         
 
                         <button
-                            type="submit"
-                            class="rounded-md bg-my-peach text-my-dark px-5 py-2 text-sm font-medium shadow-md"
+                        v-if="isEditing"
+                        type="submit"
+                        class="rounded-md bg-my-peach text-my-dark px-5 py-2 text-sm font-medium shadow-md"
                         >
                             Save Changes
                         </button>
