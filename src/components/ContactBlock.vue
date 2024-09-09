@@ -16,6 +16,7 @@ const emit = defineEmits(['contactHighlighted']);
 const loading = ref(true);
 const highlightedContactId = ref(null);
 const selectedContacts = ref([]);
+const searchQuery = ref("");
 
 const highlightedContact = computed(() => {
   return props.contacts.find(contact => contact.id === highlightedContactId.value) || null;
@@ -37,7 +38,17 @@ function highlightContact(contact) {
 }
 
 const filteredContacts = computed(() => {
-  // If a filter tag is passed, filter the contacts, otherwise show all
+  // If there's a search query, override tag filter and only filter by search
+  if (searchQuery.value) {
+    return props.contacts.filter(contact =>
+      contact.firstName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      contact.lastName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      contact.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      contact.phone.includes(searchQuery.value)
+    );
+  }
+
+  // If no search query, filter by tag (if applicable)
   return props.filterTag ? props.contacts.filter(contact => contact.tags.includes(props.filterTag)) : props.contacts;
 });
 
@@ -140,23 +151,18 @@ function isContactSelected(contact) {
                         type="text"
                         id="Search"
                         placeholder="Search for..."
+                        v-model="searchQuery" 
                         class="w-full rounded-md border border-gray-200 py-2 px-2 pe-10 shadow-md sm:text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                     />
 
                     <span class="absolute inset-y-0 end-0 grid w-10 place-content-center">
-                        <button
-                        type="button"
-                        class="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                        >
-                        <span class="sr-only">Search</span>
-
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke-width="1.5"
                             stroke="currentColor"
-                            class="h-4 w-4"
+                            class="h-4 w-4 text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                         >
                             <path
                             stroke-linecap="round"
@@ -164,9 +170,9 @@ function isContactSelected(contact) {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
                             />
                         </svg>
-                        </button>
                     </span>
                 </div>
+
 
 
                 <!-- Download, Email & Filter -->

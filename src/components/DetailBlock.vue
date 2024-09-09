@@ -11,8 +11,16 @@ const emit = defineEmits(['contactUpdated', 'contactDeleted']);
 
 let localContact = ref({ ...props.highlightedContact });
 
-watch(() => props.highlightedContact, (newVal) => {
-  localContact.value = { ...newVal };
+watch(() => props.highlightedContact, (newVal, oldVal) => {
+  // If switching contacts and there are unsaved changes, prompt the modal
+  if (isEditing.value && hasUnsavedChanges.value) {
+    showUnsavedChangesModal.value = true;
+  } else {
+    // Update the local contact and reset the editing state
+    localContact.value = { ...newVal };
+    isEditing.value = false; 
+    hasUnsavedChanges.value = false;
+  }
 }, { deep: true });
 
 let highlightedContact = computed(() => props.highlightedContact || {
@@ -35,12 +43,18 @@ const dummyLists = ref([
 /* -----------------------------------------------------------
   Edit Contact Logic
 ----------------------------------------------------------- */
-// 
-
 let isEditing = ref(false); 
+let hasUnsavedChanges = ref(false); 
+let showUnsavedChangesModal = ref(false);
 
 const startEditing = () => {
   isEditing.value = true;
+};
+
+const cancelEditing = () => {
+  isEditing.value = false;
+  localContact.value = { ...props.highlightedContact }; // Revert changes
+  hasUnsavedChanges.value = false;
 };
 
 const deleteContact = async () => {
@@ -52,8 +66,12 @@ const deleteContact = async () => {
 const saveChanges = () => {
   emit('contactUpdated', localContact.value);
   isEditing.value = false;
+  hasUnsavedChanges.value = false;
 };
 
+watch(localContact, (newVal, oldVal) => {
+  hasUnsavedChanges.value = JSON.stringify(newVal) !== JSON.stringify(props.highlightedContact);
+}, { deep: true });
 
 /* -----------------------------------------------------------
     Modal Logic
@@ -73,6 +91,29 @@ const handleCancel = () => {
   showModal.value = false;
 };
 
+const handleConfirmDelete = () => {
+  showModal.value = false;
+  deleteContact();
+};
+
+const handleCancelDelete = () => {
+  showModal.value = false;
+};
+
+const confirmUnsavedChanges = () => {
+  showUnsavedChangesModal.value = true;
+};
+
+const handleConfirmUnsavedChanges = () => {
+  saveChanges(); 
+  showUnsavedChangesModal.value = false;
+  isEditing.value = false;
+};
+
+const handleDiscardChanges = () => {
+  cancelEditing(); 
+  showUnsavedChangesModal.value = false;
+};
 
 /* -----------------------------------------------------------
   Popup Logic
@@ -91,6 +132,26 @@ const hidePopup = () => {
 </script>
 
 <template>
+    <!-- Unsaved Changes Confirmation Modal -->
+    <ConfirmationModal
+        v-if="showUnsavedChangesModal"
+        :show="showUnsavedChangesModal"
+        title="Unsaved Changes"
+        :message="`You have unsaved changes for contact ${localContact.email}. Would you like to save them before switching?`"
+        @confirm="handleConfirmUnsavedChanges"
+        @cancel="handleDiscardChanges"
+    />
+    
+    <!-- Delete Confirmation Modal -->
+    <ConfirmationModal
+        :show="showModal"
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this contact?"
+        @confirm="handleConfirmDelete"
+        @cancel="handleCancelDelete"
+        class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
+    />
+
     <!-- Details -->
     <div class="flex justify-between items-end mb-2">
         <h1 class="text-left text-2xl">Details</h1>
@@ -103,34 +164,24 @@ const hidePopup = () => {
                 @click="startEditing"
                 >
                 Edit
-                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" :fill="isEditing ? '#ffffff' : '#666666'" ><path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/></svg>
+                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" :fill="isEditing ? '#ffffff' : '#666666'">
+                    <path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/>
+                </svg>
                 </button>
             
-                <button @click="confirmDelete" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative" title="View Orders">
-                    Delete
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666">
-                        <path d="M312-144q-29.7 0-50.85-21.15Q240-186.3 240-216v-480h-48v-72h192v-48h192v48h192v72h-48v479.57Q720-186 698.85-165T648-144H312Zm72-144h72v-336h-72v336Zm120 0h72v-336h-72v336Z"/>
-                    </svg>
+                <button @click="confirmDelete" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative" title="Delete Contact">
+                Delete
+                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666">
+                    <path d="M312-144q-29.7 0-50.85-21.15Q240-186.3 240-216v-480h-48v-72h192v-48h192v48h192v72h-48v479.57Q720-186 698.85-165T648-144H312Zm72-144h72v-336h-72v336Zm120 0h72v-336h-72v336Z"/>
+                </svg>
                 </button>
             </span>
         </div>
-
-        <ConfirmationModal
-        :show="showModal"
-        title="Confirm Deletion"
-        message="Are you sure you want to delete this contact?"
-        @confirm="handleConfirm"
-        @cancel="handleCancel"
-        class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
-        />
     </div>
 
     
 
-
-
-
-    <!-- NEW STUFF -->
+    <!-- Form for editing contact details -->
     <div class="mx-auto max-w-screen-xl" >
         <div class="rounded-lg p-4 bg-white border border-gray-300 shadow-md overflow-visible">
             <form @submit.prevent="saveChanges" class="space-y-4 mt-2">
@@ -283,7 +334,7 @@ const hidePopup = () => {
                         <!-- <button v-if="localContact.id" class=" pt-0.5" @click="openTagInput">
                             <PlusBoxIcon class="text-my-teal" />
                         </button> -->
-                        <AddTagButton v-if="props.highlightedContact"/>
+                        <AddTagButton v-if="isEditing"/>
                     </div>
                 </div>
 
@@ -324,9 +375,9 @@ const hidePopup = () => {
                         
 
                         <button
-                        v-if="isEditing"
-                        type="submit"
-                        class="rounded-md bg-my-peach text-my-dark px-5 py-2 text-sm font-medium shadow-md"
+                            v-if="isEditing"
+                            type="submit"
+                            class="rounded-md bg-my-peach text-my-dark px-5 py-2 text-sm font-medium shadow-md"
                         >
                             Save Changes
                         </button>
