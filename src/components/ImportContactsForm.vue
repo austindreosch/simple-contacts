@@ -227,6 +227,7 @@ Papa.parse(file, {
                         lastName: contact.lastName,
                         phone: contact.phone,
                         note: contact.note,
+                        dateUpdated: new Date().toISOString()
                     });
                     contactId = existingContacts.get(contact.email);
                     console.log('Contact updated:', contactId);
@@ -239,6 +240,8 @@ Papa.parse(file, {
                         phone: contact.phone,
                         note: contact.note,
                         userId: user.value.uid,
+                        dateAdded: new Date().toISOString(),
+                        dateUpdated: new Date().toISOString()
                     });
                     contactId = contactRef.id;
                     console.log('Contact added with ID:', contactId);

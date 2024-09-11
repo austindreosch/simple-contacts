@@ -318,7 +318,7 @@ const hidePopup = () => {
                 </div>
 
                 <!-- Tags -->
-                <div class="relative block rounded-md border-2 border-gray-200 shadow-sm p-2 overflow-visible" :disabled="!isEditing"
+                <div class="relative block rounded-md border-[1.5px] border-gray-300 shadow-sm p-2 overflow-visible" :disabled="!isEditing"
                 :class="{ 'opacity-50': !isEditing }">
                     <!-- Edge-positioned label for tags -->
                     <label
@@ -351,34 +351,34 @@ const hidePopup = () => {
                 <!-- Button, Details -->
                 <div class="flex items-center justify-between">
                     <div class="text-2xs text-left ml-2 text-gray-400">
-                        <p class="">Last Updated:</p>
-                        <p class="">{{ localContact.lastUpdated ? localContact.lastUpdated : '9:36AM 9/23/2024' }}</p>
+                        <p v-if="localContact.dateUpdated" class="">Last Updated:</p>
+                        <p v-if="localContact.dateUpdated" class="">{{ new Date(localContact.dateUpdated).toLocaleString() }}</p>
 
                     </div>
                     <div class="flex space-x-2">
                         <div class="relative inline-block">
                             <!-- Button with hover events to show/hide the list popup -->
                             <div
-                            class="rounded-md bg-gray-200 text-my-dark px-2 py-2 text-sm font-medium shadow-md"
-                            @mouseover="showPopup"
-                            @mouseleave="hidePopup"
+                              class="rounded-md bg-gray-200 text-my-dark px-2 py-2 text-sm font-medium shadow-md"
+                              @mouseover="showPopup"
+                              @mouseleave="hidePopup"
                             >
-                            <listIcon class="w-6 h-6" />
+                              <listIcon class="w-6 h-6" />
                             </div>
 
                             <!-- Popup for list display -->
                             <div
-                            v-if="showListsPopup"
-                            class="absolute z-10 bg-white border border-gray-300 shadow-lg rounded-md p-2 w-48 "
-                            style="left: -12.2rem; top: 0rem;" 
+                              v-if="showListsPopup"
+                              class="absolute z-10 bg-white border border-gray-300 shadow-lg rounded-md p-2 w-48 "
+                              style="left: -12.2rem; top: 0rem;" 
                             >
-                            <p class="text-gray-700 font-bold text-sm">Assigned Lists</p>
-                            <hr class="my-1 border-gray-300" />
-                            <ul>
+                              <p class="text-gray-700 font-bold text-sm">Assigned Lists</p>
+                              <hr class="my-1 border-gray-300" />
+                              <ul>
                                 <li v-for="list in dummyLists" :key="list.name" class="text-gray-600 text-sm">
                                 {{ list.name }}
                                 </li>
-                            </ul>
+                              </ul>
                             </div>
                         </div>
 
