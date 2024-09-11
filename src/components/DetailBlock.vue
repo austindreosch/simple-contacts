@@ -6,10 +6,20 @@ import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'; // Im
 import { deleteDoc, doc } from "firebase/firestore";
 import { computed, defineEmits, defineProps, ref, watch } from 'vue';
 
-const props = defineProps({ highlightedContact: Object});
+const props = defineProps({ 
+  highlightedContact: Object,
+  tags: Array
+});
 const emit = defineEmits(['contactUpdated', 'contactDeleted']);
 
 let localContact = ref({ ...props.highlightedContact });
+
+const contactTags = computed(() => {
+  if (!props.highlightedContact || !props.tags) return [];
+  
+  // Filter the tags to include only those with the contact's ID in their `contacts` array
+  return props.tags.filter(tag => tag.contacts.includes(props.highlightedContact.id));
+});
 
 watch(() => props.highlightedContact, (newVal, oldVal) => {
   // If switching contacts and there are unsaved changes, prompt the modal
@@ -323,11 +333,11 @@ const hidePopup = () => {
                         <!-- Existing tags displayed as spans -->
                          
                         <span
-                            v-for="(tag, index) in [...new Set(localContact.tags)]"
-                            :key="tag + index"
+                            v-for="(tag, index) in contactTags"
+                            :key="tag.id"
                             class="bg-my-teal text-white px-2 py-1 rounded-md text-sm"
                             >
-                            {{ tag }}
+                            {{ tag.tagName }}
                         </span>
 
                         <!-- Placeholder button to simulate adding new tags -->

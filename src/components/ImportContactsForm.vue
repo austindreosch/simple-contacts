@@ -3,7 +3,7 @@ import { db } from '@/assets/firebase';
 import FullCheckmark from '@/assets/full-checkmark.svg';
 import Upload from '@/assets/upload.svg';
 import { user } from '@/composables/getUser';
-import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { isValidNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
 import Papa from 'papaparse';
 import validator from 'validator';
@@ -34,6 +34,7 @@ function checkImportRule() {
 -------------------------------------------------------- */
 const newListName = ref('');
 const selectedList = ref('Select a list...')
+
 watch(newListName, () => {
     if (newListName.value) {
         selectedList.value = 'Select a list...'; // Reset selectedList when newListName changes
@@ -44,6 +45,33 @@ watch(selectedList, () => {
         newListName.value = ''; // Reset newListName when selectedList changes
     }
 });
+
+async function getOrCreateTag(tagName, userId){
+    const tagsCollectionRef = collection(db, "tags");
+
+    const q = query(tagsCollectionRef, where("userId", "==", userId), where("tagName", "==", tagName));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        // Return the first matching document snapshot
+        return querySnapshot.docs[0]; // Return the entire document snapshot, not just the ID
+    }
+
+    // If tag doesn't exist, create a new one
+    const newTagRef = await addDoc(tagsCollectionRef, {
+        userId: userId,
+        tagName: tagName,
+        userEmail: user.value.email,
+        contacts: [],
+        dateAdded: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+    });
+
+    // Return the newly created document reference
+    return await getDoc(newTagRef); // Get the full document snapshot
+}
+
+
 
 const processData = async (csvData, headers) => {
 
@@ -154,101 +182,8 @@ const processData = async (csvData, headers) => {
     return processedValues;
 }
 
-// function importCSV(event) {
-
-//     // First Name, Last Name, Email, Note, Phone, Tags
-//     const file = event.target.files[0];
-
-//     Papa.parse(file, {
-//         header: true,      
-//         complete: async function(results) {
-//             const headers = results.meta.fields;
-//             const processedData = await processData(results.data, headers);
-//             console.log('processedData:', processedData);
-
-//             const existingContacts = new Map((props.contacts || []).map(contact => [contact.email, contact.id]));
-//             console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
-
-//             let listRef;
-//             if (selectedList.value !== 'Select a list...' && selectedList.value) {
-//                 listRef = doc(db, 'lists', selectedList.value);
-//                 await updateDoc(listRef, {
-//                     lastUpdated: new Date().toISOString()
-//                 });
-//             } else if (newListName.value !== '') {
-//                 const newList = await addDoc(collection(db, "lists"), {
-//                     userId: user.value.uid,
-//                     listName: newListName.value,
-//                     dateAdded: new Date().toISOString(),
-//                     lastUpdated: new Date().toISOString(),
-//                     contacts: []
-//                 });
-//                 listRef = doc(db, 'lists', newList.id);
-//             }
-
-//             if (processedData && processedData.length > 0) { // Safeguard
-//                 processedData.forEach(async (contact) => {
-//                     if (existingContacts.has(contact.email)) {
-//                         if (updateDuplicatesFromCSV.value === true) {
-//                             const contactId = existingContacts.get(contact.email);
-//                             const contactRef = doc(db, 'contacts', contactId);
-//                             await updateDoc(contactRef, {
-//                                 userId: user.value.uid,
-//                                 phone: contact.phone,
-//                                 firstName: contact.firstName,
-//                                 lastName: contact.lastName,
-//                                 note: contact.note,
-//                                 tags: contact.tags
-//                             });
-//                             console.log('Contact updated:', contactId);
-//                         } else {
-//                             console.log('Contact found but not updated:', contact.email);
-//                         }
-//                     } else {
-//                         const docRef = await addDoc(collection(db, "contacts"), {
-//                             userId: user.value.uid,
-//                             email: contact.email,
-//                             phone: contact.phone,
-//                             firstName: contact.firstName,
-//                             lastName: contact.lastName,
-//                             note: contact.note,
-//                             tags: contact.tags
-//                         });
-//                         console.log('Contact added with ID:', docRef.id);
-
-//                         if (listRef) {
-//                             const listDoc = await getDoc(listRef);
-//                             if (listDoc.exists()) {
-//                                 const listData = listDoc.data();
-//                                 listData.contacts.push(docRef.id);
-//                                 await updateDoc(listRef, { contacts: listData.contacts });
-//                                 console.log('Contact added to list:', listRef.id);
-//                             }
-//                         }
-//                     }
-//                 });
-//             } else {
-//                 console.log('No valid contacts processed.');
-//             }
-
-//             /* -----------------------------------------------------------
-//               TAG THINGS
-//             ----------------------------------------------------------- */
-
-
-
-
-//             router.push('/');
-//         },
-//         error: function(error) {
-//             console.error('Error parsing CSV:', error);
-//         }
-//     });
-// }
-
 
 function importCSV(event) {
-
 // First Name, Last Name, Email, Note, Phone, Tags
 const file = event.target.files[0];
 
@@ -262,6 +197,8 @@ Papa.parse(file, {
         const existingContacts = new Map((props.contacts || []).map(contact => [contact.email, contact.id]));
         console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
 
+        const contactsToAddToList = [];
+        
         let listRef;
         if (selectedList.value !== 'Select a list...' && selectedList.value) {
             listRef = doc(db, 'lists', selectedList.value);
@@ -278,94 +215,60 @@ Papa.parse(file, {
             });
             listRef = doc(db, 'lists', newList.id);
         }
-
         if (processedData && processedData.length > 0) { // Safeguard
-            processedData.forEach(async (contact) => {
+            for (const contact of processedData) {
+                let contactId;
+
+                // Check if the contact already exists, if so, update it
                 if (existingContacts.has(contact.email)) {
-                    if (updateDuplicatesFromCSV.value === true) {
-                        const contactId = existingContacts.get(contact.email);
-                        const contactRef = doc(db, 'contacts', contactId);
-                        await updateDoc(contactRef, {
-                            userId: user.value.uid,
-                            phone: contact.phone,
-                            firstName: contact.firstName,
-                            lastName: contact.lastName,
-                            note: contact.note,
-                            tags: contact.tags
-                        });
-                        console.log('Contact updated:', contactId);
-                    } else {
-                        console.log('Contact found but not updated:', contact.email);
-                    }
-                } else {
-                    const docRef = await addDoc(collection(db, "contacts"), {
-                        userId: user.value.uid,
-                        email: contact.email,
-                        phone: contact.phone,
+                    const contactRef = doc(db, 'contacts', existingContacts.get(contact.email));
+                    await updateDoc(contactRef, {
                         firstName: contact.firstName,
                         lastName: contact.lastName,
+                        phone: contact.phone,
                         note: contact.note,
-                        tags: contact.tags
                     });
-                    console.log('Contact added with ID:', docRef.id);
+                    contactId = existingContacts.get(contact.email);
+                    console.log('Contact updated:', contactId);
+                } else {
+                    // If the contact doesn't exist, create it
+                    const contactRef = await addDoc(collection(db, 'contacts'), {
+                        email: contact.email,
+                        firstName: contact.firstName,
+                        lastName: contact.lastName,
+                        phone: contact.phone,
+                        note: contact.note,
+                        userId: user.value.uid,
+                    });
+                    contactId = contactRef.id;
+                    console.log('Contact added with ID:', contactId);
+                }
 
-                    if (listRef) {
-                        const listDoc = await getDoc(listRef);
-                        if (listDoc.exists()) {
-                            const listData = listDoc.data();
-                            listData.contacts.push(docRef.id);
-                            await updateDoc(listRef, { contacts: listData.contacts });
-                            console.log('Contact added to list:', listRef.id);
+                // Handle the tags for the contact
+                if (contact.tags && contact.tags.length > 0) { 
+                    for (const tagName of contact.tags) {
+                        // Get or create the tag
+                        const tagDoc = await getOrCreateTag(tagName, user.value.uid);
+
+                        // Now tagDoc is a document snapshot, so we can access its data
+                        const tagData = tagDoc.data();
+                        if (!tagData.contacts.includes(contactId)) {
+                            tagData.contacts.push(contactId);
+
+                            // Update the tag with the new contacts array
+                            await updateDoc(tagDoc.ref, {
+                                contacts: tagData.contacts,
+                                lastUpdated: new Date().toISOString(),
+                            });
+                            console.log(`Tag "${tagName}" updated with contact ID: ${contactId}`);
                         }
                     }
                 }
-            });
-        } else {
-            console.log('No valid contacts processed.');
-        }
 
-        /* -----------------------------------------------------------
-          TAG MAP THINGS
-        ----------------------------------------------------------- */
-
-        for (const [tag, contactIds] of tagToContactsMap) {
-            const tagRef = collection(db, "tags");
-
-            // Check if the tag already exists for this user
-            const q = query(tagRef, where("userId", "==", user.value.uid), where("tagName", "==", tag));
-            const querySnapshot = await getDocs(q);
-
-            if (!querySnapshot.empty) {
-                // If tag exists, update the contacts array
-                for (const doc of querySnapshot.docs) {
-                    const existingTag = doc.data();
-                    const existingContacts = new Set(existingTag.contacts);  // Convert to set to avoid duplicates
-                    contactIds.forEach(contactId => existingContacts.add(contactId));
-                    
-                    // Update the tag document
-                    await updateDoc(doc.ref, {
-                        contacts: Array.from(existingContacts),
-                        lastUpdated: new Date().toISOString(),
-                    });
-                    console.log(`Updated tag: ${tag} with new contacts: ${contactIds}`);
-                }
-            } else {
-                // Prepare the data, ensuring no undefined values
-                const tagData = {
-                    userId: user.value.uid,
-                    tagName: tag,
-                    userEmail: user.value.email, 
-                    contacts: contactIds,
-                    dateAdded: new Date().toISOString(),
-                    lastUpdated: new Date().toISOString(),
-                };
-
-
-                await addDoc(tagRef, tagData);
-                console.log(`Tag added: ${tag} with contacts: ${contactIds}`);
 
             }
         }
+
         
 
         router.push('/');
@@ -387,10 +290,8 @@ Papa.parse(file, {
     <div class="max-w-xl mx-auto justify-center">
         <div class="flex justify-between items-end pt-12">
             <!-- <h1 class="text-left text-2xl">Import CSV</h1> -->
-            <!-- <p>Show Alert? {{ String(showAlert) }}</p> -->
-
         </div>
-        <div class="bg-gray-50 w-full px-6 py-8 h-86 space-y-6 rounded-md h-70">
+        <div class="bg-white w-full px-6 py-8 h-86 space-y-6 rounded-md h-70 border-2 border-gray-200 shadow-md">
             <p class="">
                 To import your contacts, press the button below to upload your files in CSV format.
             </p>

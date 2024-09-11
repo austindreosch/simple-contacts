@@ -10,7 +10,8 @@ import { computed, defineEmits, defineProps, ref } from 'vue';
 
 const props = defineProps({
     filterTag: String,
-    contacts: Array
+    contacts: Array,
+    tags: Array
 });
 const emit = defineEmits(['contactHighlighted']);
 const loading = ref(true);
@@ -20,6 +21,10 @@ const selectedContacts = ref([]);
 const highlightedContact = computed(() => {
     return props.contacts.find(contact => contact.id === highlightedContactId.value) || null;
 });
+
+function getTagsForContact(contactId) {
+  return props.tags.filter(tag => tag.contacts.includes(contactId));
+}
 
 /* -----------------------------------------------------------
 CONTACT SELECTION & FILTERING
@@ -263,8 +268,8 @@ function isContactSelected(contact) {
                             <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">{{ contact.note }}</td>
                             <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">
                                 <div class="flex flex-nowrap gap-0.5 items-center">
-                                    <div v-for="(tag, index) in contact.tags" :key="tag" class="mx-0.5">
-                                        <span v-if="index < 3" class="bg-my-teal text-white px-2 py-1 rounded-md text-sm">{{ tag }}</span>
+                                    <div v-for="(tag, index) in getTagsForContact(contact.id)" :key="tag" class="mx-0.5">
+                                        <span v-if="index < 3" class="bg-my-teal text-white px-2 py-1 rounded-md text-sm">{{ tag.tagName }}</span>
                                         <span v-else-if="index === 3" class="bg-my-teal text-white px-2 py-1 rounded-md text-sm">...</span>
                                     </div>
                                 </div>

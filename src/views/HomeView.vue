@@ -59,7 +59,10 @@ async function loadTags() {
     try {
       const q = query(collection(db, 'tags'), where('userId', '==', user.value.uid));
       const querySnapshot = await getDocs(q);
-      userTagList.value = querySnapshot.docs.map(doc => doc.data().tagName);
+      userTagList.value = querySnapshot.docs.map(doc => ({
+        id: doc.id,                // Tag ID
+        ...doc.data()              // Full tag data (name, contacts array, etc.)
+      }));
       
       console.log('Tags loaded:', userTagList.value);
     } catch (error) {
@@ -72,16 +75,17 @@ async function loadTags() {
 
 
 
+
 </script>
 
 
 <template>
   <div class="flex w-full max-w-screen-2xl h-screen mt-3">
       <div class="flex-grow overflow-y-auto mr-2">
-          <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted"/>
+          <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted" :tags="userTagList"/>
       </div>
       <div class="max-w-sm ">
-          <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact"/>
+          <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact" :tags="userTagList"/>
           <ListsBlock />
       </div>
   </div>
