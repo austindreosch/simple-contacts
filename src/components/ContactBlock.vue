@@ -16,15 +16,19 @@ const emit = defineEmits(['contactHighlighted']);
 const loading = ref(true);
 const highlightedContactId = ref(null);
 const selectedContacts = ref([]);
-const searchQuery = ref("");
 
 const highlightedContact = computed(() => {
-  return props.contacts.find(contact => contact.id === highlightedContactId.value) || null;
+    return props.contacts.find(contact => contact.id === highlightedContactId.value) || null;
 });
 
 /* -----------------------------------------------------------
-    CONTACT SELECTION & FILTERING
+CONTACT SELECTION & FILTERING
 ----------------------------------------------------------- */
+const searchQuery = ref("");
+
+function clearSearch() {
+  searchQuery.value = ""; 
+}
 
 function highlightContact(contact) {
     // Unselect if the same contact is clicked again, otherwise select the contact
@@ -51,6 +55,7 @@ const filteredContacts = computed(() => {
   // If no search query, filter by tag (if applicable)
   return props.filterTag ? props.contacts.filter(contact => contact.tags.includes(props.filterTag)) : props.contacts;
 });
+
 
 /* -----------------------------------------------------------
     PAGINATION
@@ -143,6 +148,7 @@ function isContactSelected(contact) {
             <p class="text-xs">Currently showing {{ filteredContacts.length || 'N/A' }} of {{ props.contacts.length }} total contacts. <b> {{  selectedContacts.length }} contacts selected.</b></p>            
 
             <div class="flex items-center gap-2">
+
                 <!-- Search -->
                 <div class="relative">
                     <label for="Search" class="sr-only"> Search for... </label>
@@ -156,7 +162,31 @@ function isContactSelected(contact) {
                     />
 
                     <span class="absolute inset-y-0 end-0 grid w-10 place-content-center">
+
+                        <button
+                            v-if="searchQuery"
+                            @click="clearSearch"
+                            type="button"
+                            class="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                        >
+                            <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="h-4 w-4"
+                            >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                            </svg>
+                        </button>
+
                         <svg
+                            v-else
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -170,6 +200,8 @@ function isContactSelected(contact) {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
                             />
                         </svg>
+
+
                     </span>
                 </div>
 
