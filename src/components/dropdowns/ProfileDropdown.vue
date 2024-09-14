@@ -190,6 +190,7 @@ const confirmDeleteAllContacts = async () => {
   await deleteAllContacts(user.value.uid);
   alert('All contacts have been deleted.');
   showModal.value = false;
+  router.push('/');
 };
 
 const cancelDeleteAllContacts = () => {

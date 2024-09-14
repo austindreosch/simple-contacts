@@ -5,7 +5,7 @@ import DetailBlock from '@/components/DetailBlock.vue';
 import ListsBlock from '@/components/ListsBlock.vue';
 import { user } from '@/composables/getUser'; // Ensure the path to getUser.js is correct
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const contacts = ref([]);
 const highlightedContact = ref(null);
@@ -73,7 +73,9 @@ async function loadTags() {
   }
 }
 
-
+onMounted(() => {
+    refreshContacts();  // Refresh contacts every time the homepage is loaded
+});
 
 
 </script>

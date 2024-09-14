@@ -27,8 +27,120 @@ function getTagsForContact(contactId) {
   return props.tags.filter(tag => tag.contacts.includes(contactId));
 }
 
-const phoneUtil = PhoneNumberUtil.getInstance();
 
+
+/* -----------------------------------------------------------
+CONTACT SELECTION & FILTERING
+----------------------------------------------------------- */
+const searchQuery = ref("");
+
+function clearSearch() {
+  searchQuery.value = ""; 
+}
+
+function highlightContact(contact) {
+    // Unselect if the same contact is clicked again, otherwise select the contact
+    if (highlightedContactId.value === contact.id) {
+        highlightedContactId.value = null; 
+        emit('contactHighlighted', null);
+    } else {
+        highlightedContactId.value = contact.id; 
+        emit('contactHighlighted', contact);
+    }
+}
+
+const filteredContacts = computed(() => {
+  // If there's a search query, override tag filter and only filter by search
+  if (searchQuery.value) {
+    return props.contacts.filter(contact =>
+      contact.firstName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      contact.lastName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      contact.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      contact.phone.includes(searchQuery.value)
+    );
+  }
+
+  // If no search query, filter by tag (if applicable)
+  return props.filterTag ? props.contacts.filter(contact => contact.tags.includes(props.filterTag)) : props.contacts;
+});
+
+
+/* -----------------------------------------------------------
+    PAGINATION
+----------------------------------------------------------- */
+const currentPage = ref(1);
+const contactsPerPage = 25;
+
+const paginatedContacts = computed(() => {
+    const start = (currentPage.value - 1) * contactsPerPage;
+    const end = start + contactsPerPage;
+    return filteredContacts.value.slice(start, end);
+});
+const totalPages = computed(() => Math.ceil(filteredContacts.value.length / contactsPerPage));
+
+function nextPage() {
+    if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+    }
+}
+
+function prevPage() {
+    if (currentPage.value > 1) {
+        currentPage.value--;
+    }
+}
+
+function goToPage(page) {
+    currentPage.value = page;
+}
+
+/* -----------------------------------------------------------
+    SELECTED CONTACTS HANDLING
+----------------------------------------------------------- */
+
+// Toggle the selection of a contact
+function toggleSelectContact(contact) {
+  const index = selectedContacts.value.findIndex(c => c.id === contact.id);
+  if (index === -1) {
+    selectedContacts.value.push(contact); // Store the full contact object
+  } else {
+    selectedContacts.value.splice(index, 1); // Deselect the contact
+  }
+}
+
+// Select or deselect all contacts on the current page
+function toggleSelectAllContacts() {
+  if (areAllContactsSelected.value) {
+    // Deselect all filtered contacts
+    selectedContacts.value = selectedContacts.value.filter(
+      selectedContact => !filteredContacts.value.some(contact => contact.id === selectedContact.id)
+    );
+  } else {
+    // Select all filtered contacts
+    filteredContacts.value.forEach(contact => {
+      if (!selectedContacts.value.some(selectedContact => selectedContact.id === contact.id)) {
+        selectedContacts.value.push(contact); // Add full contact object if not already selected
+      }
+    });
+  }
+}
+
+// Check if all contacts on the current page are selected
+const areAllContactsSelected = computed(() => {
+  return filteredContacts.value.every(contact =>
+    selectedContacts.value.some(selectedContact => selectedContact.id === contact.id)
+  );
+});
+
+// Check if a specific contact is selected
+function isContactSelected(contact) {
+  return selectedContacts.value.some(selectedContact => selectedContact.id === contact.id);
+}
+
+/* -----------------------------------------------------------
+PHONE NUMBER FORMATTING
+----------------------------------------------------------- */
+const phoneUtil = PhoneNumberUtil.getInstance();
 
 const formatPhoneNumber = (phone) => {
     if (!phone) return { countryCode: '', localNumber: '' }; // Handle empty or undefined phone numbers
@@ -79,135 +191,12 @@ const formatPhoneNumber = (phone) => {
 };
 
 
-
-
-
-
-
-
-
-
-/* -----------------------------------------------------------
-CONTACT SELECTION & FILTERING
------------------------------------------------------------ */
-const searchQuery = ref("");
-
-function clearSearch() {
-  searchQuery.value = ""; 
-}
-
-function highlightContact(contact) {
-    // Unselect if the same contact is clicked again, otherwise select the contact
-    if (highlightedContactId.value === contact.id) {
-        highlightedContactId.value = null; 
-        emit('contactHighlighted', null);
-    } else {
-        highlightedContactId.value = contact.id; 
-        emit('contactHighlighted', contact);
-    }
-}
-
-const filteredContacts = computed(() => {
-  // If there's a search query, override tag filter and only filter by search
-  if (searchQuery.value) {
-    return props.contacts.filter(contact =>
-      contact.firstName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      contact.lastName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      contact.phone.includes(searchQuery.value)
-    );
-  }
-
-  // If no search query, filter by tag (if applicable)
-  return props.filterTag ? props.contacts.filter(contact => contact.tags.includes(props.filterTag)) : props.contacts;
-});
-
-
-/* -----------------------------------------------------------
-    PAGINATION
------------------------------------------------------------ */
-const currentPage = ref(1);
-const contactsPerPage = 20;
-
-const paginatedContacts = computed(() => {
-    const start = (currentPage.value - 1) * contactsPerPage;
-    const end = start + contactsPerPage;
-    return filteredContacts.value.slice(start, end);
-});
-const totalPages = computed(() => Math.ceil(filteredContacts.value.length / contactsPerPage));
-
-function nextPage() {
-    if (currentPage.value < totalPages.value) {
-        currentPage.value++;
-    }
-}
-
-function prevPage() {
-    if (currentPage.value > 1) {
-        currentPage.value--;
-    }
-}
-
-function goToPage(page) {
-    currentPage.value = page;
-}
-
-
-/* -----------------------------------------------------------
-    SELECTED CONTACTS HANDLING
------------------------------------------------------------ */
-
-// Toggle the selection of a contact
-function toggleSelectContact(contact) {
-  const index = selectedContacts.value.findIndex(c => c.id === contact.id);
-  if (index === -1) {
-    selectedContacts.value.push(contact); // Store the full contact object
-  } else {
-    selectedContacts.value.splice(index, 1); // Deselect the contact
-  }
-}
-
-
-// Select or deselect all contacts on the current page
-function toggleSelectAllContacts() {
-  if (areAllContactsSelected.value) {
-    // Deselect all filtered contacts
-    selectedContacts.value = selectedContacts.value.filter(
-      selectedContact => !filteredContacts.value.some(contact => contact.id === selectedContact.id)
-    );
-  } else {
-    // Select all filtered contacts
-    filteredContacts.value.forEach(contact => {
-      if (!selectedContacts.value.some(selectedContact => selectedContact.id === contact.id)) {
-        selectedContacts.value.push(contact); // Add full contact object if not already selected
-      }
-    });
-  }
-}
-
-
-// Check if all contacts on the current page are selected
-const areAllContactsSelected = computed(() => {
-  return filteredContacts.value.every(contact =>
-    selectedContacts.value.some(selectedContact => selectedContact.id === contact.id)
-  );
-});
-
-
-// Check if a specific contact is selected
-function isContactSelected(contact) {
-  return selectedContacts.value.some(selectedContact => selectedContact.id === contact.id);
-}
-
-
-
-
 </script>
 
 
 
 <template>
-    <div class="flex flex-col max-h-screen">
+    <div class="flex flex-col max-h-[90vh]">
         <!-- Details -->
         <div class="flex justify-between items-end mb-2 px-1">
             <!-- <h1 class="text-left text-2xl">Contacts</h1> -->
@@ -292,120 +281,121 @@ function isContactSelected(contact) {
 
 
         <!-- TABLE -->
-        <div class="flex-grow overflow-visible rounded-lg border border-gray-300 shadow-md my-0 mr-1 mb-1 flex flex-col z-1">
+        <div class="overflow-hidden table-wrapper rounded-lg border border-gray-300 shadow-md my-0 mr-1 mb-1 z-1 ">
+          <div class="overflow-x-auto overflow-y-auto h-[75vh] no-scrollbar max-h-[60rem]">
+              <table class="min-w-full table-fixed divide-y divide-gray-200 bg-white text-sm"> 
+                  <thead class="bg-my-dark sticky text-white top-0">
+                      <tr>
+                          <!-- TABLE HEADER -->
+                          <th class="px-4 py-2 text-left">
+                              <label for="SelectAll" class="sr-only">Select All</label>
+                              <input type="checkbox" id="SelectAll" class="size-4 rounded border-gray-300" :checked="areAllContactsSelected" @change="toggleSelectAllContacts"/>
+                          </th>
+                          <th class="px-4 py-2 text-left font-medium ">Name</th>
+                          <th class="px-4 py-2 text-left font-medium ">Email</th>
+                          <th class="px-4 py-2 text-left font-medium pl-4 ">Phone</th>
+                          <th class="px-4 py-2 text-left font-medium ">Note</th>
+                          <th class="px-4 py-2 text-left font-medium pl-5 ">Tags</th>
+                      </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                      <!-- EACH CONTACT -->
+                      <tr v-for="contact in paginatedContacts" :key="contact.id" @click="highlightContact(contact)" :class="{ 'bg-blue-100': contact.id === highlightedContactId }" class="cursor-pointer">
+                          <td class="px-4 py-2 text-left" @click.stop>
+                              <label class="sr-only" :for="'Row' + contact.id">Row {{ contact.id }}</label>
+                              <input
+                                  class="size-4 rounded border-gray-300"
+                                  type="checkbox"
+                                  :id="'Row' + contact.id"
+                                  :checked="isContactSelected(contact)"
+                                  @click.stop="toggleSelectContact(contact)"
+                              />
+                          </td>
+                          <td class="px-4 py-2 text-left font-medium text-gray-900 truncate max-w-xs">{{ contact.firstName }} {{ contact.lastName }}</td>
+                          <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">{{ contact.email }}</td>
+                          <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">
+                              <span class="text-gray-400 mr-1">{{ formatPhoneNumber(contact.phone).countryCode }}</span>
+                              <span>{{ formatPhoneNumber(contact.phone).localNumber }}</span>
+                          </td>
+                          <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">{{ contact.note }}</td>
+                          <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">
+                              <div class="flex flex-nowrap gap-0.5 items-center">
+                                  <div v-for="(tag, index) in getTagsForContact(contact.id)" :key="tag" class="mx-0.5">
+                                      <span v-if="index < 3" class="bg-my-teal text-white px-2 py-1 rounded-md text-sm">{{ tag.tagName }}</span>
+                                      <span v-else-if="index === 3" class="bg-my-teal text-white px-2 py-1 rounded-md text-sm">...</span>
+                                  </div>
+                              </div>
+                          </td>
+                      </tr>
+                      <tr>
+                          <div>
+                              
+                          </div>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full table-fixed divide-y divide-gray-200 bg-white text-sm">
-                    <thead class="bg-my-dark sticky text-white top-0">
-                        <tr>
-                            <!-- TABLE HEADER -->
-                            <th class="px-4 py-2 text-left">
-                                <label for="SelectAll" class="sr-only">Select All</label>
-                                <input type="checkbox" id="SelectAll" class="size-4 rounded border-gray-300" :checked="areAllContactsSelected" @change="toggleSelectAllContacts"/>
-                            </th>
-                            <th class="px-4 py-2 text-left font-medium ">Name</th>
-                            <th class="px-4 py-2 text-left font-medium ">Email</th>
-                            <th class="px-4 py-2 text-left font-medium pl-4 ">Phone</th>
-                            <th class="px-4 py-2 text-left font-medium ">Note</th>
-                            <th class="px-4 py-2 text-left font-medium pl-5 ">Tags</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        <!-- EACH CONTACT -->
-                        <tr v-for="contact in paginatedContacts" :key="contact.id" @click="highlightContact(contact)" :class="{ 'bg-blue-100': contact.id === highlightedContactId }" class="cursor-pointer">
-                            <td class="px-4 py-2 text-left" @click.stop>
-                                <label class="sr-only" :for="'Row' + contact.id">Row {{ contact.id }}</label>
-                                <input
-                                    class="size-4 rounded border-gray-300"
-                                    type="checkbox"
-                                    :id="'Row' + contact.id"
-                                    :checked="isContactSelected(contact)"
-                                    @click.stop="toggleSelectContact(contact)"
-                                />
-                            </td>
-                            <td class="px-4 py-2 text-left font-medium text-gray-900 truncate max-w-xs">{{ contact.firstName }} {{ contact.lastName }}</td>
-                            <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">{{ contact.email }}</td>
-                            <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">
-                                <span class="text-gray-400 mr-1">{{ formatPhoneNumber(contact.phone).countryCode }}</span>
-                                <span>{{ formatPhoneNumber(contact.phone).localNumber }}</span>
-                            </td>
-                            <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">{{ contact.note }}</td>
-                            <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">
-                                <div class="flex flex-nowrap gap-0.5 items-center">
-                                    <div v-for="(tag, index) in getTagsForContact(contact.id)" :key="tag" class="mx-0.5">
-                                        <span v-if="index < 3" class="bg-my-teal text-white px-2 py-1 rounded-md text-sm">{{ tag.tagName }}</span>
-                                        <span v-else-if="index === 3" class="bg-my-teal text-white px-2 py-1 rounded-md text-sm">...</span>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <div>
-                                
-                            </div>
-                        </tr>
-                    </tbody>
-                </table>
-                    <div class="bg-white py-2">
 
-                        <!-- PAGINATION -->
-                        <ol class="flex justify-center gap-1 text-xs font-medium mt-3">
-                            <li>
-                                <button
-                                    @click="prevPage"
-                                    :disabled="currentPage === 1"
-                                    class="inline-flex size-8 items-center justify-center rounded border border-gray-200 bg-gray-100 text-gray-900 rtl:rotate-180"
-                                >
-                                    <span class="sr-only">Prev Page</span>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="h-3 w-3"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                    >
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                            clip-rule="evenodd"
-                                        />
-                                    </svg>
-                                </button>
-                            </li>
-                
-                            <li v-for="page in totalPages" :key="page">
-                                <button
-                                    @click="goToPage(page)"
-                                    :class="{'block size-8 rounded border border-gray-200 bg-gray-100 text-center leading-8 text-gray-900': page !== currentPage, 'block size-8 rounded border-my-teal bg-my-teal text-center leading-8 text-white': page === currentPage}"
-                                >
-                                    {{ page }}
-                                </button>
-                            </li>
-                
-                            <li>
-                                <button
-                                    @click="nextPage"
-                                    :disabled="currentPage === totalPages"
-                                    class="inline-flex size-8 items-center justify-center rounded border border-gray-200 bg-gray-100 text-gray-900 rtl:rotate-180"
-                                >
-                                    <span class="sr-only">Next Page</span>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="h-3 w-3"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                    >
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a 1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                            clip-rule="evenodd"
-                                        />
-                                    </svg>
-                                </button>
-                            </li>
-                        </ol>
+          <div class="bg-white py-1 mb-3 border-t border-gray-300 ">
 
-                    </div>
-            </div>
+              <!-- PAGINATION -->
+              <ol class="flex justify-center gap-1 text-xs font-medium mt-3">
+                  <li>
+                      <button
+                          @click="prevPage"
+                          :disabled="currentPage === 1"
+                          class="inline-flex size-8 items-center justify-center rounded border border-gray-200 bg-gray-100 text-gray-900 rtl:rotate-180"
+                      >
+                          <span class="sr-only">Prev Page</span>
+                          <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-3 w-3"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                          >
+                              <path
+                                  fill-rule="evenodd"
+                                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                  clip-rule="evenodd"
+                              />
+                          </svg>
+                      </button>
+                  </li>
+      
+                  <li v-for="page in totalPages" :key="page">
+                      <button
+                          @click="goToPage(page)"
+                          :class="{'block size-8 rounded border border-gray-200 bg-gray-100 text-center leading-8 text-gray-900': page !== currentPage, 'block size-8 rounded border-my-teal bg-my-teal text-center leading-8 text-white': page === currentPage}"
+                      >
+                          {{ page }}
+                      </button>
+                  </li>
+      
+                  <li>
+                      <button
+                          @click="nextPage"
+                          :disabled="currentPage === totalPages"
+                          class="inline-flex size-8 items-center justify-center rounded border border-gray-200 bg-gray-100 text-gray-900 rtl:rotate-180"
+                      >
+                          <span class="sr-only">Next Page</span>
+                          <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-3 w-3"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                          >
+                              <path
+                                  fill-rule="evenodd"
+                                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a 1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                  clip-rule="evenodd"
+                              />
+                          </svg>
+                      </button>
+                  </li>
+              </ol>
+
+          </div>
         </div>
 
 

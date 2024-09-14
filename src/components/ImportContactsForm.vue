@@ -13,11 +13,12 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const props = defineProps({ contacts: Array });
+
+
 const tagToContactsMap = new Map(); 
 
 
 const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1M3dbgvoswoscYwuk92i2iMyt_SXUz6OQ&export=download&authuser=0'
-// const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1KYAl5y9q-wrZRzAEDG6ueseQs6Tb_rrL&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
 
 const updateDuplicatesFromCSV = ref(null);
@@ -134,6 +135,7 @@ const processData = async (csvData, headers) => {
     /* -----------------------------------------------------------
     *  Validate and structure the data for each contact
     ----------------------------------------------------------- */
+    const phoneUtil = PhoneNumberUtil.getInstance();
 
     const processedValues = csvData.map(row => {
         //Gather the column index values for each header
@@ -208,7 +210,7 @@ Papa.parse(file, {
     complete: async function(results) {
         const headers = results.meta.fields;
         const processedData = await processData(results.data, headers);
-        console.log('processedData:', processedData);
+        // console.log('processedData:', processedData);
 
         // Fetch existing contacts from the database
         const q = query(collection(db, 'contacts'), where('userId', '==', user.value.uid));
@@ -218,7 +220,7 @@ Papa.parse(file, {
             const data = doc.data();
             existingContacts.set(data.email, doc.id);
         });
-        console.log('existingContacts:', existingContacts);
+        // console.log('existingContacts:', existingContacts);
 
 
         const contactsToAddToList = [];
@@ -249,9 +251,6 @@ Papa.parse(file, {
                 if (existingContacts.has(contact.email)) {
                     contactId = existingContacts.get(contact.email);
 
-                    console.log('Existing contacts:', existingContacts);
-                    console.log('Checking contact email:', contact.email);  
-                    console.log('Updating note for contact:', contact.note);
 
                     if (updateDuplicatesFromCSV.value === true){
                             const contactRef = doc(db, 'contacts', contactId);
@@ -262,10 +261,10 @@ Papa.parse(file, {
                                 note: contact.note,
                                 dateUpdated: new Date().toISOString()
                             });
-                            console.log('Contact updated:', contactId);
+                            console.log('Contact updated:', contact.email);
                     } else {
                         //if updateDuplicatesFromCSV is false, keep the previous data
-                        console.log('Duplicate contact found. Keeping previous data for:', contactId);
+                        console.log('Duplicate contact found. Keeping previous data for:', contact.email);
                     }
                 } else {
                     // If the contact doesn't exist, create it
@@ -301,7 +300,7 @@ Papa.parse(file, {
                                 contacts: tagData.contacts,
                                 lastUpdated: new Date().toISOString(),
                             });
-                            console.log(`Tag "${tagName}" updated with contact ID: ${contactId}`);
+                            console.log(`Tag "${tagName}" updated with contact: ${contact.email}`);
                         }
                     }
                 }
