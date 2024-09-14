@@ -282,7 +282,7 @@ const formatPhoneNumber = (phone) => {
 
         <!-- TABLE -->
         <div class="overflow-hidden table-wrapper rounded-lg border border-gray-300 shadow-md my-0 mr-1 mb-1 z-1 ">
-          <div class="overflow-x-auto overflow-y-auto h-[75vh] no-scrollbar max-h-[60rem]">
+          <div class="overflow-x-auto overflow-y-auto max-h-[75vh] no-scrollbar max-h-[60rem]">
               <table class="min-w-full table-fixed divide-y divide-gray-200 bg-white text-sm"> 
                   <thead class="bg-my-dark sticky text-white top-0">
                       <tr>
