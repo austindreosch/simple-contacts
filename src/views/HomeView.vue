@@ -80,7 +80,7 @@ async function loadTags() {
 
 
 <template>
-  <div class="flex w-full max-w-screen-2xl h-screen mt-3">
+  <div class="flex w-full max-w-screen-2xl mt-3">
       <div class="flex-grow overflow-y-auto mr-2">
           <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted" :tags="userTagList"/>
       </div>

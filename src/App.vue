@@ -16,7 +16,7 @@ getUser();
         <div class="flex-1 md:flex md:items-center md:gap-12">
           <router-link class="block text-white" to="/">
             <span class="sr-only">Home</span>
-            <div class="font-outfit text-my-dark flex space-x-2 items-center pr-20">
+            <div class="font-outfit text-my-dark flex space-x-2 items-center 2xl:-ml-9">
               <span class="mt-[.45rem] pl-0.5">
                 <svg class="w-8 h-8 text-my-dark dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                   <path fill-rule="evenodd" d="M4 4a2 2 0 1 0 0 4h16a2 2 0 1 0 0-4H4Zm0 6h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8Zm10.707 5.707a1 1 0 0 0-1.414-1.414l-.293.293V12a1 1 0 1 0-2 0v2.586l-.293-.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l2-2Z" clip-rule="evenodd"/>

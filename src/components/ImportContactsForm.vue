@@ -3,7 +3,7 @@ import { db } from '@/assets/firebase';
 import FullCheckmark from '@/assets/full-checkmark.svg';
 import Upload from '@/assets/upload.svg';
 import { user } from '@/composables/getUser';
-import { addDoc, collection, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { isValidNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
 import Papa from 'papaparse';
@@ -210,8 +210,16 @@ Papa.parse(file, {
         const processedData = await processData(results.data, headers);
         console.log('processedData:', processedData);
 
-        const existingContacts = new Map((props.contacts || []).map(contact => [contact.email, contact.id]));
-        console.log('existingContacts:', existingContacts); //NEED TO VALIDATE THAT THIS WORKS
+        // Fetch existing contacts from the database
+        const q = query(collection(db, 'contacts'), where('userId', '==', user.value.uid));
+        const existingContactsSnapshot = await getDocs(q);
+        const existingContacts = new Map();
+        existingContactsSnapshot.forEach(doc => {
+            const data = doc.data();
+            existingContacts.set(data.email, doc.id);
+        });
+        console.log('existingContacts:', existingContacts);
+
 
         const contactsToAddToList = [];
         
@@ -231,22 +239,34 @@ Papa.parse(file, {
             });
             listRef = doc(db, 'lists', newList.id);
         }
-        if (processedData && processedData.length > 0) { // Safeguard
+
+        
+        if (processedData && processedData.length > 0) {
             for (const contact of processedData) {
                 let contactId;
 
                 // Check if the contact already exists, if so, update it
                 if (existingContacts.has(contact.email)) {
-                    const contactRef = doc(db, 'contacts', existingContacts.get(contact.email));
-                    await updateDoc(contactRef, {
-                        firstName: contact.firstName,
-                        lastName: contact.lastName,
-                        phone: contact.phone,
-                        note: contact.note,
-                        dateUpdated: new Date().toISOString()
-                    });
                     contactId = existingContacts.get(contact.email);
-                    console.log('Contact updated:', contactId);
+
+                    console.log('Existing contacts:', existingContacts);
+                    console.log('Checking contact email:', contact.email);  
+                    console.log('Updating note for contact:', contact.note);
+
+                    if (updateDuplicatesFromCSV.value === true){
+                            const contactRef = doc(db, 'contacts', contactId);
+                            await updateDoc(contactRef, {
+                                firstName: contact.firstName,
+                                lastName: contact.lastName,
+                                phone: contact.phone,
+                                note: contact.note,
+                                dateUpdated: new Date().toISOString()
+                            });
+                            console.log('Contact updated:', contactId);
+                    } else {
+                        //if updateDuplicatesFromCSV is false, keep the previous data
+                        console.log('Duplicate contact found. Keeping previous data for:', contactId);
+                    }
                 } else {
                     // If the contact doesn't exist, create it
                     const contactRef = await addDoc(collection(db, 'contacts'), {
@@ -262,6 +282,8 @@ Papa.parse(file, {
                     contactId = contactRef.id;
                     console.log('Contact added with ID:', contactId);
                 }
+
+
 
                 // Handle the tags for the contact
                 if (contact.tags && contact.tags.length > 0) { 
@@ -324,11 +346,11 @@ Papa.parse(file, {
                 </div>
                 <div class="flex justify-center space-x-4">
                     <div>
-                        <input type="radio" id="update" value=true class="mr-1" v-model="updateDuplicatesFromCSV">
+                        <input type="radio" id="update" :value=true class="mr-1" v-model="updateDuplicatesFromCSV">
                         <label for="update" class="">Update contact from import data.</label>
                     </div>
                     <div>
-                        <input type="radio" id="replace" value=false class="mr-1" v-model="updateDuplicatesFromCSV">
+                        <input type="radio" id="replace" :value=false class="mr-1" v-model="updateDuplicatesFromCSV">
                         <label for="replace" class="">Keep previous contact data.</label>
                     </div>
                 </div>
