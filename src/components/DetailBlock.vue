@@ -74,108 +74,136 @@ const formatPhoneNumber = (phone) => {
 
   phone = phone.replace(/[\s-()]/g, '');
 
+  // try {
+  //       let parsedPhoneNumber;
+
+  //       // First, check for US numbers
+  //       if (phone.startsWith('+')){
+  //         parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, '');
+  //       } else if (phone.length === 10) {
+  //           parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'US');
+  //       } else if (phone.startsWith('1') && phone.length === 11) {
+  //           parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'US');
+  //       } else {
+  //           // Now, check for known country codes
+  //           if (phone.startsWith('44')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'GB'); // UK numbers
+  //           } else if (phone.startsWith('49')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'DE'); // Germany numbers
+  //           } else if (phone.startsWith('91')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IN'); // India numbers
+  //           } else if (phone.startsWith('61')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'AU'); // Australia numbers
+  //           } else if (phone.startsWith('81')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'JP'); // Japan numbers
+  //           } else if (phone.startsWith('33')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'FR'); // France numbers
+  //           } else if (phone.startsWith('39')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IT'); // Italy numbers
+  //           } else if (phone.startsWith('34')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ES'); // Spain numbers
+  //           } else if (phone.startsWith('7')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'RU'); // Russia numbers
+  //           } else if (phone.startsWith('82')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'KR'); // South Korea numbers
+  //           } else if (phone.startsWith('86')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'CN'); // China numbers
+  //           } else if (phone.startsWith('52')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'MX'); // Mexico numbers
+  //           } else if (phone.startsWith('55')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'BR'); // Brazil numbers
+  //           } else if (phone.startsWith('65')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'SG'); // Singapore numbers
+  //           } else if (phone.startsWith('27')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ZA'); // South Africa numbers
+  //           } else if (phone.startsWith('31')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'NL'); // Netherlands numbers
+  //           } else if (phone.startsWith('32')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'BE'); // Belgium numbers
+  //           } else if (phone.startsWith('46')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'SE'); // Sweden numbers
+  //           } else if (phone.startsWith('47')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'NO'); // Norway numbers
+  //           } else if (phone.startsWith('90')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'TR'); // Turkey numbers
+  //           } else if (phone.startsWith('66')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'TH'); // Thailand numbers
+  //           } else if (phone.startsWith('48')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'PL'); // Poland numbers
+  //           } else if (phone.startsWith('63')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'PH'); // Philippines numbers
+  //           } else if (phone.startsWith('41')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'CH'); // Switzerland numbers
+  //           } else if (phone.startsWith('62')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ID'); // Indonesia numbers
+  //           } else if (phone.startsWith('60')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'MY'); // Malaysia numbers
+  //           } else if (phone.startsWith('93')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'AF'); // Afghanistan numbers
+  //           } else if (phone.startsWith('964')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IQ'); // Iraq numbers
+  //           } else if (phone.startsWith('98')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IR'); // Iran numbers
+  //           } else if (phone.startsWith('92')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'PK'); // Pakistan numbers
+  //           } else if (phone.startsWith('880')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'BD'); // Bangladesh numbers
+  //           } else if (phone.startsWith('972')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IL'); // Israel numbers
+  //           } else if (phone.startsWith('20')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'EG'); // Egypt numbers
+  //           } else if (phone.startsWith('971')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'AE'); // UAE numbers
+  //           } else if (phone.startsWith('212')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'MA'); // Morocco numbers
+  //           } else if (phone.startsWith('251')) {
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ET'); // Ethiopia numbers
+  //           } else {
+  //             // If the country code is not recognized and it's not 10 digits, just return the raw phone number
+  //             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, '');
+  //           }
+  //       }
+
+  //       // Check if the parsed number is valid
+  //       if (phoneUtil.isValidNumber(parsedPhoneNumber)) {
+  //         return phoneUtil.format(parsedPhoneNumber, PhoneNumberFormat.INTERNATIONAL)
+  //       } else {
+  //         return phone; // Return the raw number if it's invalid
+  //       }
+  //   } catch (error) {
+  //       console.warn(`Failed to parse phone number: ${phone}`, error);
+  //       return phone;
+  //   }
+
   try {
         let parsedPhoneNumber;
 
-        // First, check for US numbers
-        if (phone.startsWith('+')){
-          parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, '');
+        if (phone.startsWith('+')) {
+            // Parse international number as-is
+            parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, '');
         } else if (phone.length === 10) {
+            // Assume it's a US number without country code
             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'US');
         } else if (phone.startsWith('1') && phone.length === 11) {
+            // US number with country code
             parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'US');
         } else {
-            // Now, check for known country codes
-            if (phone.startsWith('44')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'GB'); // UK numbers
-            } else if (phone.startsWith('49')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'DE'); // Germany numbers
-            } else if (phone.startsWith('91')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IN'); // India numbers
-            } else if (phone.startsWith('61')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'AU'); // Australia numbers
-            } else if (phone.startsWith('81')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'JP'); // Japan numbers
-            } else if (phone.startsWith('33')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'FR'); // France numbers
-            } else if (phone.startsWith('39')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IT'); // Italy numbers
-            } else if (phone.startsWith('34')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ES'); // Spain numbers
-            } else if (phone.startsWith('7')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'RU'); // Russia numbers
-            } else if (phone.startsWith('82')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'KR'); // South Korea numbers
-            } else if (phone.startsWith('86')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'CN'); // China numbers
-            } else if (phone.startsWith('52')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'MX'); // Mexico numbers
-            } else if (phone.startsWith('55')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'BR'); // Brazil numbers
-            } else if (phone.startsWith('65')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'SG'); // Singapore numbers
-            } else if (phone.startsWith('27')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ZA'); // South Africa numbers
-            } else if (phone.startsWith('31')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'NL'); // Netherlands numbers
-            } else if (phone.startsWith('32')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'BE'); // Belgium numbers
-            } else if (phone.startsWith('46')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'SE'); // Sweden numbers
-            } else if (phone.startsWith('47')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'NO'); // Norway numbers
-            } else if (phone.startsWith('90')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'TR'); // Turkey numbers
-            } else if (phone.startsWith('66')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'TH'); // Thailand numbers
-            } else if (phone.startsWith('48')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'PL'); // Poland numbers
-            } else if (phone.startsWith('63')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'PH'); // Philippines numbers
-            } else if (phone.startsWith('41')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'CH'); // Switzerland numbers
-            } else if (phone.startsWith('62')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ID'); // Indonesia numbers
-            } else if (phone.startsWith('60')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'MY'); // Malaysia numbers
-            } else if (phone.startsWith('93')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'AF'); // Afghanistan numbers
-            } else if (phone.startsWith('964')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IQ'); // Iraq numbers
-            } else if (phone.startsWith('98')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IR'); // Iran numbers
-            } else if (phone.startsWith('92')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'PK'); // Pakistan numbers
-            } else if (phone.startsWith('880')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'BD'); // Bangladesh numbers
-            } else if (phone.startsWith('972')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IL'); // Israel numbers
-            } else if (phone.startsWith('20')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'EG'); // Egypt numbers
-            } else if (phone.startsWith('971')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'AE'); // UAE numbers
-            } else if (phone.startsWith('212')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'MA'); // Morocco numbers
-            } else if (phone.startsWith('251')) {
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ET'); // Ethiopia numbers
-            } else {
-              // If the country code is not recognized and it's not 10 digits, just return the raw phone number
-              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, '');
-            }
+            // For other numbers, attempt to parse them as international numbers
+            parsedPhoneNumber = phoneUtil.parseAndKeepRawInput('+' + phone, '');
         }
 
         // Check if the parsed number is valid
-        if (phoneUtil.isValidNumber(parsedPhoneNumber)) {
-          return phoneUtil.format(parsedPhoneNumber, PhoneNumberFormat.INTERNATIONAL)
+        if (parsedPhoneNumber && phoneUtil.isValidNumber(parsedPhoneNumber)) {
+            return phoneUtil.format(parsedPhoneNumber, PhoneNumberFormat.INTERNATIONAL);
+
         } else {
-          return phone; // Return the raw number if it's invalid
+            // Return the raw number if it's invalid
+            return phone;
         }
     } catch (error) {
         console.warn(`Failed to parse phone number: ${phone}`, error);
         return phone;
     }
-
-
 
 
 };
