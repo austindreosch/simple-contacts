@@ -3,7 +3,8 @@ import { db } from '@/assets/firebase';
 import listIcon from '@/assets/listicon.svg';
 import AddTagButton from '@/components/dropdowns/AddTagButton.vue';
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'; // Import the modal component
-import { deleteDoc, doc } from "firebase/firestore";
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { computed, defineEmits, defineProps, ref, watch } from 'vue';
 
 const props = defineProps({ 
@@ -13,6 +14,7 @@ const props = defineProps({
 const emit = defineEmits(['contactUpdated', 'contactDeleted']);
 
 let localContact = ref({ ...props.highlightedContact });
+let isEditing = ref(false); 
 
 const contactTags = computed(() => {
   if (!props.highlightedContact || !props.tags) return [];
@@ -49,11 +51,180 @@ const dummyLists = ref([
   { name: 'VIP Clients' }
 ]);
 
+/* -----------------------------------------------------------
+  Phone Number Logic
+----------------------------------------------------------- */
+
+const phoneUtil = PhoneNumberUtil.getInstance();
+let editablePhone = ref(localContact.value.phone);
+
+// Watch for changes in isEditing to switch between raw and formatted phone number
+watch(isEditing, (newValue) => {
+  if (newValue) {
+    // When entering edit mode, show the raw phone number
+    editablePhone.value = localContact.value.phone;
+  } else {
+    // When exiting edit mode, format the phone number
+    editablePhone.value = formatPhoneNumber(localContact.value.phone);
+  }
+});
+
+const formatPhoneNumber = (phone) => {
+  if (!phone) return '';// Handle empty or undefined phone numbers
+
+  phone = phone.replace(/[\s-()]/g, '');
+
+  try {
+        let parsedPhoneNumber;
+
+        // First, check for US numbers
+        if (phone.startsWith('+')){
+          parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, '');
+        } else if (phone.length === 10) {
+            parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'US');
+        } else if (phone.startsWith('1') && phone.length === 11) {
+            parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'US');
+        } else {
+            // Now, check for known country codes
+            if (phone.startsWith('44')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'GB'); // UK numbers
+            } else if (phone.startsWith('49')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'DE'); // Germany numbers
+            } else if (phone.startsWith('91')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IN'); // India numbers
+            } else if (phone.startsWith('61')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'AU'); // Australia numbers
+            } else if (phone.startsWith('81')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'JP'); // Japan numbers
+            } else if (phone.startsWith('33')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'FR'); // France numbers
+            } else if (phone.startsWith('39')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IT'); // Italy numbers
+            } else if (phone.startsWith('34')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ES'); // Spain numbers
+            } else if (phone.startsWith('7')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'RU'); // Russia numbers
+            } else if (phone.startsWith('82')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'KR'); // South Korea numbers
+            } else if (phone.startsWith('86')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'CN'); // China numbers
+            } else if (phone.startsWith('52')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'MX'); // Mexico numbers
+            } else if (phone.startsWith('55')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'BR'); // Brazil numbers
+            } else if (phone.startsWith('65')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'SG'); // Singapore numbers
+            } else if (phone.startsWith('27')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ZA'); // South Africa numbers
+            } else if (phone.startsWith('31')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'NL'); // Netherlands numbers
+            } else if (phone.startsWith('32')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'BE'); // Belgium numbers
+            } else if (phone.startsWith('46')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'SE'); // Sweden numbers
+            } else if (phone.startsWith('47')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'NO'); // Norway numbers
+            } else if (phone.startsWith('90')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'TR'); // Turkey numbers
+            } else if (phone.startsWith('66')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'TH'); // Thailand numbers
+            } else if (phone.startsWith('48')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'PL'); // Poland numbers
+            } else if (phone.startsWith('63')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'PH'); // Philippines numbers
+            } else if (phone.startsWith('41')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'CH'); // Switzerland numbers
+            } else if (phone.startsWith('62')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ID'); // Indonesia numbers
+            } else if (phone.startsWith('60')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'MY'); // Malaysia numbers
+            } else if (phone.startsWith('93')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'AF'); // Afghanistan numbers
+            } else if (phone.startsWith('964')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IQ'); // Iraq numbers
+            } else if (phone.startsWith('98')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IR'); // Iran numbers
+            } else if (phone.startsWith('92')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'PK'); // Pakistan numbers
+            } else if (phone.startsWith('880')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'BD'); // Bangladesh numbers
+            } else if (phone.startsWith('972')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'IL'); // Israel numbers
+            } else if (phone.startsWith('20')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'EG'); // Egypt numbers
+            } else if (phone.startsWith('971')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'AE'); // UAE numbers
+            } else if (phone.startsWith('212')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'MA'); // Morocco numbers
+            } else if (phone.startsWith('251')) {
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'ET'); // Ethiopia numbers
+            } else {
+              // If the country code is not recognized and it's not 10 digits, just return the raw phone number
+              parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, '');
+            }
+        }
+
+        // Check if the parsed number is valid
+        if (phoneUtil.isValidNumber(parsedPhoneNumber)) {
+          return phoneUtil.format(parsedPhoneNumber, PhoneNumberFormat.INTERNATIONAL)
+        } else {
+          return phone; // Return the raw number if it's invalid
+        }
+    } catch (error) {
+        console.warn(`Failed to parse phone number: ${phone}`, error);
+        return phone;
+    }
+
+
+
+
+};
+
+
+// When you toggle edit mode, copy the current formatted phone into editablePhone
+function toggleEditMode() {
+  isEditing.value = !isEditing.value;
+
+  if (isEditing.value) {
+    // Populate editablePhone with the raw phone number when entering edit mode
+    editablePhone.value = localContact.phone;
+  } else {
+    // Format and validate the phone number when saving
+    savePhoneNumber();
+  }
+}
+
+function savePhoneNumber() {
+  try {
+    const parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(editablePhone.value, 'US'); // Set default country if necessary
+    if (phoneUtil.isValidNumber(parsedPhoneNumber)) {
+      // Save the formatted phone number back to localContact
+      localContact.phone = phoneUtil.format(parsedPhoneNumber, PhoneNumberFormat.INTERNATIONAL);
+      isEditing.value = false; // Exit edit mode
+    } else {
+      alert("Invalid phone number!");
+    }
+  } catch (error) {
+    console.error("Failed to parse phone number:", error);
+    alert("Invalid phone number!");
+  }
+}
+
+// Computed property to manage the input value
+const phoneInput = computed({
+  get() {
+    // If in editing mode, return the raw phone number
+    return isEditing.value ? localContact.value.phone : formatPhoneNumber(localContact.value.phone);
+  },
+  set(value) {
+    // Always update the raw phone number when editing
+    localContact.value.phone = value;
+  }
+});
 
 /* -----------------------------------------------------------
   Edit Contact Logic
 ----------------------------------------------------------- */
-let isEditing = ref(false); 
 let hasUnsavedChanges = ref(false); 
 let showUnsavedChangesModal = ref(false);
 
@@ -73,11 +244,29 @@ const deleteContact = async () => {
     emit('contactDeleted');
 };
 
-const saveChanges = () => {
-  emit('contactUpdated', localContact.value);
-  isEditing.value = false;
-  hasUnsavedChanges.value = false;
+const saveChanges = async () => {
+  if (localContact.value.id) {
+    try {
+      const contactRef = doc(db, 'contacts', localContact.value.id);
+      // Update the document with the values from `localContact`
+      await updateDoc(contactRef, {
+        firstName: localContact.value.firstName,
+        lastName: localContact.value.lastName,
+        email: localContact.value.email,
+        note: localContact.value.note,
+        phone: localContact.value.phone,
+        dateUpdated: new Date().toISOString()
+      });
+
+      emit('contactUpdated', localContact.value); 
+      isEditing.value = false;
+      hasUnsavedChanges.value = false;
+    } catch (error) {
+      console.error('Error updating contact:', error);
+    }
+  }
 };
+
 
 watch(localContact, (newVal, oldVal) => {
   hasUnsavedChanges.value = JSON.stringify(newVal) !== JSON.stringify(props.highlightedContact);
@@ -292,6 +481,7 @@ const hidePopup = () => {
                         </label>
                     </div>
 
+
                     <div class="md:col-span-4">
                         <label
                         for="phone"
@@ -302,10 +492,11 @@ const hidePopup = () => {
                             id="phone"
                             class="w-full rounded-lg border-gray-300 p-2 my-0.5 text-sm peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                             placeholder="Phone"
-                            v-model="localContact.phone"
+                            v-model="phoneInput"
                             :disabled="!isEditing"
                             :class="{ 'opacity-50': !isEditing }"
                             />
+
                         
                             <span
                             class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 font-bold transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs"
@@ -313,8 +504,14 @@ const hidePopup = () => {
                             Phone
                             </span>
                         </label>
-
                     </div>
+
+                    
+
+
+
+
+
                 </div>
 
                 <!-- Tags -->

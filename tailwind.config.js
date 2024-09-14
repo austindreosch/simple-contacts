@@ -29,6 +29,7 @@ export default {
       colors: {
         'my-dark': '#2e4448',
         'my-teal': '#50b6a8',
+        'my-teal-dark': '#429b8f',
         'my-lightteal': '#79cdbc',
         'my-peach': '#fec6a4',
       },

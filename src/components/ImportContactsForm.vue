@@ -4,6 +4,7 @@ import FullCheckmark from '@/assets/full-checkmark.svg';
 import Upload from '@/assets/upload.svg';
 import { user } from '@/composables/getUser';
 import { addDoc, collection, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { isValidNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
 import Papa from 'papaparse';
 import validator from 'validator';
@@ -151,13 +152,28 @@ const processData = async (csvData, headers) => {
 
         // Phone
         let phone = phoneIndex !== -1 ? row[phoneHeader] : '';
-        if (phone && !isValidNumber(phone)) {  // Add validation for invalid phone
-            errors.missingPhones.push(row);
-        } else if (phone) {
-            const phoneNumber = parsePhoneNumberFromString(phone);
-            phone = phoneNumber ? phoneNumber.formatInternational() : '';
+        if (phone) {
+            try {
+            let parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'US'); // Default to US
+            
+            if (phoneUtil.isValidNumber(parsedPhoneNumber)) {
+                phone = phoneUtil.format(parsedPhoneNumber, PhoneNumberFormat.INTERNATIONAL);
+            } else {
+                parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(phone, 'GB'); // Fallback to UK
+                
+                if (phoneUtil.isValidNumber(parsedPhoneNumber)) {
+                phone = phoneUtil.format(parsedPhoneNumber, PhoneNumberFormat.INTERNATIONAL);
+                } else {
+                errors.missingPhones.push(row); // If still invalid, add to errors
+                }
+            }
+            } catch (error) {
+            console.warn(`Failed to parse phone number: ${phone}`, error);
+            errors.missingPhones.push(row); // Handle parse errors
+            }
         }
 
+        
         // Names
         let firstName = '';
         let lastName = '';
