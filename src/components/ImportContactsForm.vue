@@ -12,14 +12,25 @@ import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const props = defineProps({ contacts: Array });
+const props = defineProps({ 
+    contacts: Array,
+ });
 
 
 const tagToContactsMap = new Map(); 
 
+const dummyLists = [
+    { id: 'list1', name: 'List 1' },
+    { id: 'list2', name: 'List 2' },
+    { id: 'list3', name: 'List 3' },
+    { id: 'list4', name: 'List 4' },
+    { id: 'list5', name: 'List 5' },
+];
+
 
 const dummyDataCSV = 'https://drive.usercontent.google.com/download?id=1M3dbgvoswoscYwuk92i2iMyt_SXUz6OQ&export=download&authuser=0'
 const shortDummyDataCSV = 'https://drive.usercontent.google.com/download?id=1yuQHUlnp7bttHy1ivAIVROA-cf8Zg146&export=download&authuser=0'
+
 
 const updateDuplicatesFromCSV = ref(null);
 const showAlert = ref(false);
@@ -141,8 +152,8 @@ const processData = async (csvData, headers) => {
         //Gather the column index values for each header
         const emailHeader = headers[emailIndex];
         const phoneHeader = headers[phoneIndex];
-        const firstNameHeader = headers[firstNameIndex];
-        const lastNameHeader = headers[lastNameIndex];
+        // const firstNameHeader = headers[firstNameIndex];
+        // const lastNameHeader = headers[lastNameIndex];
         const noteHeader = headers[noteIndex];
         const tagsHeader = headers[tagsIndex]; 
 
@@ -150,6 +161,7 @@ const processData = async (csvData, headers) => {
         const email = emailHeader ? row[emailHeader] : '';
         if (!email || !validator.isEmail(email)) {  // Add validation for empty and invalid email
             errors.missingEmails.push(row);
+            return null;
         }
 
         // Phone
@@ -170,8 +182,8 @@ const processData = async (csvData, headers) => {
                 }
             }
             } catch (error) {
-            console.warn(`Failed to parse phone number: ${phone}`, error);
-            errors.missingPhones.push(row); // Handle parse errors
+                console.warn(`Failed to parse phone number: ${phone}`, error);
+                errors.missingPhones.push(row); // Handle parse errors
             }
         }
 
@@ -210,8 +222,11 @@ Papa.parse(file, {
     complete: async function(results) {
         const headers = results.meta.fields;
         const processedData = await processData(results.data, headers);
-        // console.log('processedData:', processedData);
 
+        const validContacts = processedData.filter(contact => {
+            // Check if contact is not null and has at least one non-empty field
+            return contact && (contact.email || contact.phone || contact.firstName || contact.lastName);
+        });
         // Fetch existing contacts from the database
         const q = query(collection(db, 'contacts'), where('userId', '==', user.value.uid));
         const existingContactsSnapshot = await getDocs(q);
@@ -220,7 +235,7 @@ Papa.parse(file, {
             const data = doc.data();
             existingContacts.set(data.email, doc.id);
         });
-        // console.log('existingContacts:', existingContacts);
+
 
 
         const contactsToAddToList = [];
@@ -243,10 +258,10 @@ Papa.parse(file, {
         }
 
         
-        if (processedData && processedData.length > 0) {
-            for (const contact of processedData) {
+        if (validContacts && validContacts.length > 0) {
+            for (const contact of validContacts) {
                 let contactId;
-
+                
                 // Check if the contact already exists, if so, update it
                 if (existingContacts.has(contact.email)) {
                     contactId = existingContacts.get(contact.email);

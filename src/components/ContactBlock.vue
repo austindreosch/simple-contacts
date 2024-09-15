@@ -6,8 +6,9 @@ import DownloadDropdown from '@/components/dropdowns/DownloadDropdown.vue';
 import EmailDropdown from '@/components/dropdowns/EmailDropdown.vue';
 import FilterDropdown from '@/components/dropdowns/FilterDropdown.vue';
 import TagFilterDropdown from '@/components/dropdowns/TagFilterDropdown.vue';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import { computed, defineEmits, defineProps, ref } from 'vue';
+import { computed, defineEmits, defineProps, ref, watchEffect } from 'vue';
 
 const props = defineProps({
     filterTag: String,
@@ -21,10 +22,17 @@ const emit = defineEmits(['contactHighlighted']);
 const loading = ref(true);
 const highlightedContactId = ref(null);
 const selectedContacts = ref([]);
+const selectedTags = ref([]);
+const filteredContacts = ref([]);
 
 const highlightedContact = computed(() => {
     return props.contacts.find(contact => contact.id === highlightedContactId.value) || null;
 });
+
+
+/* -----------------------------------------------------------
+  TAGS FILTERING LOGIC
+----------------------------------------------------------- */
 
 function getTagsForContact(contactId) {
   return props.tags.filter(tag => tag.contacts.includes(contactId));
@@ -35,6 +43,33 @@ const tags = computed(() => {
   return Array.isArray(props.tags) ? props.tags : props.tags.value;
 });
 
+async function getContactsByTags(selectedTags) {
+  try {
+    const q = query(collection(db, 'tags'), where('tagName', 'in', selectedTags));
+    const querySnapshot = await getDocs(q);
+
+    let contactIds = [];
+
+    querySnapshot.forEach(doc => {
+      const tagData = doc.data();
+      if (tagData.contacts) {
+        contactIds.push(...tagData.contacts); // Collect contact IDs for each tag
+      }
+    });
+
+    // Remove duplicates from the contactIds array
+    contactIds = [...new Set(contactIds)];
+
+    return contactIds; // Return the list of contact IDs
+  } catch (error) {
+    console.error('Error fetching contacts by tags:', error);
+    return [];
+  }
+}
+
+function handleTagSelection(tags) {
+  selectedTags.value = tags;
+}
 
 /* -----------------------------------------------------------
 CONTACT SELECTION & FILTERING
@@ -59,19 +94,28 @@ function highlightContact(contact) {
     }
 }
 
-const filteredContacts = computed(() => {
-  // If there's a search query, override tag filter and only filter by search
+const filterContacts = async () => {
+  let contacts = props.contacts;
+
   if (searchQuery.value) {
-    return props.contacts.filter(contact =>
+    // Filter by search query
+    contacts = contacts.filter(contact =>
       contact.firstName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       contact.lastName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       contact.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       contact.phone.includes(searchQuery.value)
     );
+  } else if (selectedTags.value.length > 0) {
+    // Filter by selected tags
+    const contactIds = await getContactsByTags(selectedTags.value); // Get contacts by tag
+    contacts = contacts.filter(contact => contactIds.includes(contact.id));
   }
 
-  // If no search query, filter by tag (if applicable)
-  return props.filterTag ? props.contacts.filter(contact => contact.tags.includes(props.filterTag)) : props.contacts;
+  filteredContacts.value = contacts; // Update the reactive filteredContacts
+};
+
+watchEffect(() => {
+  filterContacts(); // Call the filterContacts function whenever searchQuery or selectedTags change
 });
 
 
@@ -278,7 +322,7 @@ const formatPhoneNumber = (phone) => {
                     <!-- <AddListDropdown /> -->
                     <DownloadDropdown :selectedContacts="selectedContacts" :filteredContacts="filteredContacts" :contacts="contacts" />
                     <!-- <FilterDropdown /> -->
-                    <TagFilterDropdown :tags="tags" />
+                    <TagFilterDropdown :tags="tags" @tagsSelected="handleTagSelection"/>
                 </span>
 
             </div>

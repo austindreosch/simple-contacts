@@ -61,9 +61,8 @@ import { computed, defineProps, onMounted, onUnmounted, ref, watchEffect } from 
 const props = defineProps({
   tags: Array,
 });
+const emit = defineEmits(['tagsSelected']);
 
-// const tags = ref(['Marketing', 'Development', 'Design', 'Support', 'Management']); // Example tags
-// const tags = ref(props.tags);
 const selectedTags = ref([]);
 const searchTerm = ref('');
 const isOpen = ref(false);
@@ -90,14 +89,19 @@ const toggleTagSelection = (tag) => {
   } else {
     selectedTags.value.push(tag);
   }
+  emit('tagsSelected', selectedTags.value);
+  // console.log('selectedTags:', selectedTags.value);
+  
 };
 
 const removeTag = (tag) => {
   selectedTags.value = selectedTags.value.filter(t => t !== tag);
+  emit('tagsSelected', selectedTags.value);
 };
 
 const clearAllFilters = () => {
   selectedTags.value = [];
+  emit('tagsSelected', selectedTags.value);
 };
 
 const handleClickOutside = (event) => {
