@@ -56,9 +56,14 @@
 
 <script setup>
 import { dropdownStore } from '@/stores/dropdownStore';
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue';
+import { computed, defineProps, onMounted, onUnmounted, ref, watchEffect } from 'vue';
 
-const tags = ref(['Marketing', 'Development', 'Design', 'Support', 'Management']); // Example tags
+const props = defineProps({
+  tags: Array,
+});
+
+// const tags = ref(['Marketing', 'Development', 'Design', 'Support', 'Management']); // Example tags
+// const tags = ref(props.tags);
 const selectedTags = ref([]);
 const searchTerm = ref('');
 const isOpen = ref(false);
@@ -68,12 +73,15 @@ const toggleDropdown = () => {
   if (dropdownStore.openDropdownId === dropdownId) {
     dropdownStore.clearOpenDropdown();
   } else {
+    
     dropdownStore.setOpenDropdown(dropdownId);
   }
 };
-
 const filteredTags = computed(() => {
-  return tags.value.filter(tag => tag.toLowerCase().includes(searchTerm.value.toLowerCase()));
+  // Access the tagName property directly for filtering
+  return props.tags
+    .map(tag => tag.tagName) // Extract tagName from each tag object
+    .filter(tagName => tagName.toLowerCase().includes(searchTerm.value.toLowerCase()));
 });
 
 const toggleTagSelection = (tag) => {

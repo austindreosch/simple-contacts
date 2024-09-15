@@ -199,7 +199,7 @@ function goToPage(page) {
     
     
     <!-- Lists -->
-    <div class="bg-white border border-gray-300 rounded-lg shadow-md w-full px-4 pt-4 space-y-2 ">
+    <div class="bg-white border border-gray-300 rounded-lg shadow-md w-full px-4 pt-4 space-y-2 select-none ">
 
         <!-- Add New List Form -->
         <div v-if="showNewListForm" class="mb-2 flex items-center">

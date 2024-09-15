@@ -14,6 +14,9 @@ const props = defineProps({
     contacts: Array,
     tags: Array
 });
+
+// const tags = ref(props.tags.value);
+
 const emit = defineEmits(['contactHighlighted']);
 const loading = ref(true);
 const highlightedContactId = ref(null);
@@ -27,6 +30,10 @@ function getTagsForContact(contactId) {
   return props.tags.filter(tag => tag.contacts.includes(contactId));
 }
 
+const tags = computed(() => {
+  // If props.tags is a ref, use `.value`, otherwise use it directly
+  return Array.isArray(props.tags) ? props.tags : props.tags.value;
+});
 
 
 /* -----------------------------------------------------------
@@ -36,6 +43,9 @@ const searchQuery = ref("");
 
 function clearSearch() {
   searchQuery.value = ""; 
+  // console.log("tag in contactblock:", tags[0]);
+  // console.log("tags in contactblock:", props.tags.value);
+  console.log("tags in contactblock:", tags.value[0]);
 }
 
 function highlightContact(contact) {
@@ -268,22 +278,17 @@ const formatPhoneNumber = (phone) => {
                     <!-- <AddListDropdown /> -->
                     <DownloadDropdown :selectedContacts="selectedContacts" :filteredContacts="filteredContacts" :contacts="contacts" />
                     <!-- <FilterDropdown /> -->
-                    <TagFilterDropdown />
+                    <TagFilterDropdown :tags="tags" />
                 </span>
 
             </div>
         </div>
 
 
-
-
-
-
-
         <!-- TABLE -->
         <div class="overflow-hidden table-wrapper rounded-lg border border-gray-300 shadow-md my-0 mr-1 mb-1 z-1 ">
-          <div class="overflow-x-auto overflow-y-auto max-h-[75vh] no-scrollbar max-h-[60rem]">
-              <table class="min-w-full table-fixed divide-y divide-gray-200 bg-white text-sm"> 
+          <div class="overflow-x-auto overflow-y-auto max-h-[75vh] no-scrollbar ">
+              <table class="min-w-full table-fixed divide-y divide-gray-200 bg-white text-sm select-none"> 
                   <thead class="bg-my-dark sticky text-white top-0">
                       <tr>
                           <!-- TABLE HEADER -->
@@ -314,7 +319,7 @@ const formatPhoneNumber = (phone) => {
                           <td class="px-4 py-2 text-left font-medium text-gray-900 truncate max-w-xs">{{ contact.firstName }} {{ contact.lastName }}</td>
                           <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">{{ contact.email }}</td>
                           <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">
-                              <span class="text-gray-400 mr-1">{{ formatPhoneNumber(contact.phone).countryCode }}</span>
+                              <span class="text-gray-400 mr-1 text-xs">{{ formatPhoneNumber(contact.phone).countryCode }}</span>
                               <span>{{ formatPhoneNumber(contact.phone).localNumber }}</span>
                           </td>
                           <td class="px-4 py-2 text-left text-gray-700 truncate max-w-xs">{{ contact.note }}</td>
@@ -396,9 +401,8 @@ const formatPhoneNumber = (phone) => {
               </ol>
 
           </div>
+
+
         </div>
-
-
-
     </div>
 </template>

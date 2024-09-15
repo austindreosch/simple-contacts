@@ -32,7 +32,7 @@
 <script setup>
 import { dropdownStore } from '@/stores/dropdownStore';
 import Papa from 'papaparse';
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue';
+import { computed, defineProps, onMounted, onUnmounted, ref, watchEffect } from 'vue';
 
 const props = defineProps({
   selectedContacts: Array,

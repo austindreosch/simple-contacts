@@ -39,7 +39,7 @@ function refreshContacts() {
 
 
 function clearHighlightedContact() {
-    highlightedContact.value = null;
+    highlightedContact.value = null;9
     refreshContacts();
 }
 
@@ -60,11 +60,10 @@ async function loadTags() {
       const q = query(collection(db, 'tags'), where('userId', '==', user.value.uid));
       const querySnapshot = await getDocs(q);
       userTagList.value = querySnapshot.docs.map(doc => ({
-        id: doc.id,                // Tag ID
-        ...doc.data()              // Full tag data (name, contacts array, etc.)
+        id: doc.id,
+        ...doc.data(),
       }));
-      
-      console.log('Tags loaded:', userTagList.value);
+      // Ensure that doc.data() includes 'tagName' and 'contacts' fields
     } catch (error) {
       console.error('Error loading tags:', error);
     }
@@ -72,6 +71,7 @@ async function loadTags() {
     console.log('Cannot load tags. User is not authenticated');
   }
 }
+
 
 onMounted(() => {
     refreshContacts();  // Refresh contacts every time the homepage is loaded
