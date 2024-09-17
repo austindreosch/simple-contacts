@@ -3,7 +3,7 @@ import { db } from '@/assets/firebase';
 import FullCheckmark from '@/assets/full-checkmark.svg';
 import Upload from '@/assets/upload.svg';
 import { user } from '@/composables/getUser';
-import { addDoc, collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { isValidNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
 import Papa from 'papaparse';
@@ -76,8 +76,8 @@ async function getOrCreateTag(tagName, userId){
         tagName: tagName,
         userEmail: user.value.email,
         contacts: [],
-        dateAdded: new Date().toISOString(),
-        lastUpdated: new Date().toISOString(),
+        dateAdded: serverTimestamp(),
+        lastUpdated: serverTimestamp(),
     });
 
     // Return the newly created document reference
@@ -244,14 +244,14 @@ Papa.parse(file, {
         if (selectedList.value !== 'Select a list...' && selectedList.value) {
             listRef = doc(db, 'lists', selectedList.value);
             await updateDoc(listRef, {
-                lastUpdated: new Date().toISOString()
+                lastUpdated: serverTimestamp()
             });
         } else if (newListName.value !== '') {
             const newList = await addDoc(collection(db, "lists"), {
                 userId: user.value.uid,
                 listName: newListName.value,
-                dateAdded: new Date().toISOString(),
-                lastUpdated: new Date().toISOString(),
+                dateAdded: serverTimestamp(),
+                lastUpdated: serverTimestamp(),
                 contacts: []
             });
             listRef = doc(db, 'lists', newList.id);
@@ -274,7 +274,7 @@ Papa.parse(file, {
                                 lastName: contact.lastName,
                                 phone: contact.phone,
                                 note: contact.note,
-                                dateUpdated: new Date().toISOString()
+                                dateUpdated: serverTimestamp()
                             });
                             console.log('Contact updated:', contact.email);
                     } else {
@@ -290,8 +290,8 @@ Papa.parse(file, {
                         phone: contact.phone,
                         note: contact.note,
                         userId: user.value.uid,
-                        dateAdded: new Date().toISOString(),
-                        dateUpdated: new Date().toISOString()
+                        dateAdded: serverTimestamp(),
+                        dateUpdated: serverTimestamp()
                     });
                     contactId = contactRef.id;
                     console.log('Contact added with ID:', contactId);
@@ -313,7 +313,7 @@ Papa.parse(file, {
                             // Update the tag with the new contacts array
                             await updateDoc(tagDoc.ref, {
                                 contacts: tagData.contacts,
-                                lastUpdated: new Date().toISOString(),
+                                lastUpdated: serverTimestamp(),
                             });
                             console.log(`Tag "${tagName}" updated with contact: ${contact.email}`);
                         }

@@ -5,7 +5,7 @@
       <p class="mb-4">{{ message }}</p>
       <div class="flex justify-end space-x-2">
         <button @click="cancel" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-        <button @click="confirm" class="px-4 py-2 bg-red-500 text-white rounded">Confirm</button>
+        <button @click="confirm" :class="['px-4 py-2 text-white rounded', confirmButtonColor]">Confirm</button>
       </div>
     </div>
   </div>
@@ -18,6 +18,7 @@ const props = defineProps({
   show: Boolean,
   title: String,
   message: String,
+  confirmButtonColor: { type: String, default: 'bg-red-500 text-white' }, // Default color is red
 });
 
 const emit = defineEmits(['confirm', 'cancel']);

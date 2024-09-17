@@ -1,10 +1,9 @@
 <script setup>
 import dummyData from '@/assets/dummydata.json';
 import { db } from '@/assets/firebase';
-import AddListDropdown from '@/components/dropdowns/AddListDropdown.vue';
 import DownloadDropdown from '@/components/dropdowns/DownloadDropdown.vue';
 import EmailDropdown from '@/components/dropdowns/EmailDropdown.vue';
-import FilterDropdown from '@/components/dropdowns/FilterDropdown.vue';
+import ListDropdown from '@/components/dropdowns/ListDropdown.vue';
 import TagFilterDropdown from '@/components/dropdowns/TagFilterDropdown.vue';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
@@ -13,12 +12,13 @@ import { computed, defineEmits, defineProps, ref, watchEffect } from 'vue';
 const props = defineProps({
     filterTag: String,
     contacts: Array,
-    tags: Array
+    tags: Array,
+    lists: Array,
 });
 
 // const tags = ref(props.tags.value);
 
-const emit = defineEmits(['contactHighlighted']);
+const emit = defineEmits(['contactHighlighted', 'refreshContacts']);
 const loading = ref(true);
 const highlightedContactId = ref(null);
 const selectedContacts = ref([]);
@@ -29,6 +29,14 @@ const highlightedContact = computed(() => {
     return props.contacts.find(contact => contact.id === highlightedContactId.value) || null;
 });
 
+const lists = computed(() => {
+  return Array.isArray(props.lists) ? props.lists : props.lists.value;
+});
+
+const refreshContacts = () => {
+  emit('refreshContacts');
+  console.log('refreshing contacts real hard');
+}; 
 
 /* -----------------------------------------------------------
   TAGS FILTERING LOGIC
@@ -321,8 +329,9 @@ const formatPhoneNumber = (phone) => {
                     <EmailDropdown :selectedContacts="selectedContacts" :filteredContacts="filteredContacts" :contacts="contacts" />
                     <!-- <AddListDropdown /> -->
                     <DownloadDropdown :selectedContacts="selectedContacts" :filteredContacts="filteredContacts" :contacts="contacts" />
+                    <ListDropdown :selectedContacts="selectedContacts" :filteredContacts="filteredContacts" :contacts="contacts" :lists="lists" @addedToGroup="refreshContacts"/>
                     <!-- <FilterDropdown /> -->
-                    <TagFilterDropdown :tags="tags" @tagsSelected="handleTagSelection"/>
+                    <TagFilterDropdown :tags="tags" @tagsSelected="handleTagSelection" @refreshContacts="refreshContacts"/>
                 </span>
 
             </div>
@@ -336,10 +345,10 @@ const formatPhoneNumber = (phone) => {
                   <thead class="bg-my-dark sticky text-white top-0">
                       <tr>
                           <!-- TABLE HEADER -->
-                          <th class="px-4 py-2 text-left">
-                              <label for="SelectAll" class="sr-only">Select All</label>
-                              <input type="checkbox" id="SelectAll" class="size-4 rounded border-gray-300" :checked="areAllContactsSelected" @change="toggleSelectAllContacts"/>
-                          </th>
+                          <th class="px-4 py-2 text-left" @click.stop>
+                            <label for="SelectAll" class="sr-only">Select All</label>
+                            <input type="checkbox" id="SelectAll" class="size-4 rounded border-gray-300" :checked="areAllContactsSelected" @change.stop="toggleSelectAllContacts" />
+                            </th>
                           <th class="px-4 py-2 text-left font-medium ">Name</th>
                           <th class="px-4 py-2 text-left font-medium ">Email</th>
                           <th class="px-4 py-2 text-left font-medium pl-4 ">Phone</th>

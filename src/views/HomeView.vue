@@ -10,6 +10,8 @@ import { onMounted, ref, watch } from 'vue';
 const contacts = ref([]);
 const highlightedContact = ref(null);
 const userTagList = ref([]);
+const lists = ref([]);
+const selectedContacts = ref([]);
 
 /* -----------------------------------------------------------
 LOAD USER CONTACTS (SENT TO CHILDREN COMPONENTS)
@@ -35,6 +37,7 @@ function refreshContacts() {
     console.log('refreshing contacts', contacts);
     loadContacts();
     loadTags();
+    loadLists();
 }
 
 
@@ -47,12 +50,13 @@ watch(user, async (newUser) => {
   if (newUser) {
     await loadContacts();
     await loadTags();
+    await loadLists();
   }
 });
 
 
 /* -----------------------------------------------------------
-  LOAD USER TAGS (SENT TO CHILDREN COMPONENTS)
+  LOAD USER TAGS & LISTS (SENT TO CHILDREN COMPONENTS)
 ----------------------------------------------------------- */
 async function loadTags() {
   if (user.value) {
@@ -72,10 +76,43 @@ async function loadTags() {
   }
 }
 
+async function loadLists() {
+    // console.log('CHECKING USER VALUE', user.value.uid);
+    if (user.value) {
+        const q = query(collection(db, 'lists'), where('userID', '==', user.value.uid));
+        // console.log("USER ID LOADING LISTS" ,user.value.uid)
+        try {
+            const querySnapshot = await getDocs(q);
+            // console.log(querySnapshot.size);
+            const loadedLists = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                loadedLists.push({
+                    id: doc.id,
+                    listName: data.listName,
+                    userID: data.userID,
+                    contacts: data.contacts,
+                    dateAdded: data.dateAdded.toDate().toLocaleString(),
+                    lastUpdated: data.lastUpdated.toDate().toLocaleString()
+                });
+            });
+            lists.value = loadedLists;
+        } catch (error) {
+            console.error('Failed to load lists:', error);
+        }
+    } 
+}
+
+
+
+
+
 
 onMounted(() => {
-    refreshContacts();  // Refresh contacts every time the homepage is loaded
+    refreshContacts();
 });
+
+
 
 
 </script>
@@ -84,11 +121,11 @@ onMounted(() => {
 <template>
   <div class="flex w-full max-w-screen-2xl mt-3">
       <div class="flex-grow overflow-y-auto mr-2">
-          <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted" :tags="userTagList"/>
+          <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted" :tags="userTagList" :lists="lists" @refreshContacts="refreshContacts"/>
       </div>
       <div class="max-w-sm ">
           <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact" :tags="userTagList"/>
-          <ListsBlock />
+          <ListsBlock :lists="lists"  @refreshContacts="refreshContacts" />
       </div>
   </div>
 </template>

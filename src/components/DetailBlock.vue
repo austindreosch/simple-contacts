@@ -2,8 +2,8 @@
 import { db } from '@/assets/firebase';
 import listIcon from '@/assets/listicon.svg';
 import AddTagButton from '@/components/dropdowns/AddTagButton.vue';
-import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'; // Import the modal component
-import { deleteDoc, doc, updateDoc } from "firebase/firestore";
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
+import { deleteDoc, doc, serverTimestamp, updateDoc, } from "firebase/firestore";
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { computed, defineEmits, defineProps, ref, watch } from 'vue';
 
@@ -283,7 +283,7 @@ const saveChanges = async () => {
         email: localContact.value.email,
         note: localContact.value.note,
         phone: localContact.value.phone,
-        dateUpdated: new Date().toISOString()
+        dateUpdated: serverTimestamp()
       });
 
       emit('contactUpdated', localContact.value); 
