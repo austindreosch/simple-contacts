@@ -119,7 +119,7 @@ document.removeEventListener('click', handleClickOutside);
     <!-- Dropdown with filtered tags -->
     <div 
       v-if="isOpen" 
-      class="absolute right-0 z-[9999] mt-1 w-60 divide-y divide-gray-100 rounded-md border border-gray-300 bg-white shadow-lg p-2" 
+      class="absolute right-0 z-[9999] mt-1 w-[17rem] divide-y divide-gray-100 rounded-md border border-gray-300 bg-white shadow-lg p-2" 
       role="menu"
       style="overflow: visible;"
     >
@@ -135,38 +135,54 @@ document.removeEventListener('click', handleClickOutside);
 
       <!-- Tags List as buttons -->
       <div class="max-h-40 overflow-y-auto">
-        <ul>
-          <li 
+        <div class="flex flex-wrap gap-2">
+          <div 
             v-for="tag in filteredTags" 
             :key="tag.id" 
             @click="addTagToContact(tag)" 
-            class="flex items-center gap-2 cursor-pointer rounded-md px-1 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            class="cursor-pointer"
           >
             <button
-              class="px-2 py-1 rounded bg-my-teal text-white text-sm hover:bg-teal-600"
+              class="flex items-center space-x-1 px-2 py-1 rounded bg-my-teal text-white text-sm hover:bg-teal-600"
             >
-              Add {{ tag.tagName }}
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4">
+                <!-- White circle background -->
+                <circle cx="12" cy="12" r="9" fill="white" />
+                <!-- Plus sign with my-teal color -->
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8" stroke="currentColor" stroke-width="1.5" class="text-my-teal" />
+              </svg>
+
+              <span>{{ tag.tagName }}</span>
             </button>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
+
 
       <!-- Add New Tag Section -->
       <div class="mt-2 pt-2 border-t border-gray-200">
-        <input 
-          v-model="newTagName" 
-          type="text" 
-          class="w-full rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300" 
-          placeholder="Add new tag..."
-        >
-        <button 
-          type="button" 
-          @click="addNewTag" 
-          class="mt-2 w-full flex justify-center items-center px-3 py-2 bg-my-teal text-white text-sm font-medium rounded-md hover:bg-teal-600"
-        >
-          Add Tag
-        </button>
-      </div>
+  <div class="flex items-center space-x-2">
+    <input 
+      v-model="newTagName" 
+      type="text" 
+      class="w-3/4 rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300" 
+      placeholder="Add new tag..."
+    >
+    <button 
+      type="button" 
+      @click="addNewTag" 
+      class="w-1/4 px-3 py-1.5 bg-my-teal text-white text-sm font-medium rounded-md hover:bg-teal-600"
+    >
+      Add
+    </button>
+  </div>
+</div>
+
+
+
+
+
+
     </div>
   </div>
 </template>
