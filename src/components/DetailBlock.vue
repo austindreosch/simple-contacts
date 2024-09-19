@@ -4,17 +4,25 @@ import listIcon from '@/assets/listicon.svg';
 import AddTagButton from '@/components/dropdowns/AddTagButton.vue';
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
 import { deleteDoc, doc, serverTimestamp, updateDoc, } from "firebase/firestore";
+import { list } from 'firebase/storage';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { computed, defineEmits, defineProps, ref, watch } from 'vue';
 
 const props = defineProps({ 
   highlightedContact: Object,
-  tags: Array
+  tags: Array,
+  lists: Array
 });
+
 const emit = defineEmits(['contactUpdated', 'contactDeleted']);
 
 let localContact = ref({ ...props.highlightedContact });
 let isEditing = ref(false); 
+
+
+/* -----------------------------------------------------------
+  PULLING IN DATA FROM PROPS
+----------------------------------------------------------- */
 
 const contactTags = computed(() => {
   if (!props.highlightedContact || !props.tags) return [];
@@ -22,6 +30,32 @@ const contactTags = computed(() => {
   // Filter the tags to include only those with the contact's ID in their `contacts` array
   return props.tags.filter(tag => tag.contacts.includes(props.highlightedContact.id));
 });
+
+const unusedTags = computed(() => {
+  if (!props.highlightedContact || !props.tags) return [];
+  
+  // Filter the tags to exclude those with the contact's ID in their `contacts` array
+  return props.tags.filter(tag => !tag.contacts.includes(props.highlightedContact.id));
+});
+
+const contactLists = computed(() => {
+  if (!props.highlightedContact || !props.highlightedContact.id || !props.lists) {
+    // console.log('No highlighted contact or lists available.');
+    return [];
+  }
+
+  const filteredLists = props.lists.filter(list => {
+    const isAssociated = list.contacts?.includes(props.highlightedContact.id);
+    if (isAssociated) {
+        // console.log(`Contact ID ${props.highlightedContact.id} is associated with list: ${list.name || list.listName}`);
+      }
+      return isAssociated;
+  });
+
+  // console.log('Filtered Lists:', filteredLists);
+  return filteredLists;
+});
+
 
 watch(() => props.highlightedContact, (newVal, oldVal) => {
   // If switching contacts and there are unsaved changes, prompt the modal
@@ -45,11 +79,11 @@ let highlightedContact = computed(() => props.highlightedContact || {
 });
 
 // Will be replaced with actual data from the database
-const dummyLists = ref([
-  { name: 'Friends' },
-  { name: 'Coworkers' },
-  { name: 'VIP Clients' }
-]);
+// const dummyLists = ref([
+//   { name: 'Friends' },
+//   { name: 'Coworkers' },
+//   { name: 'VIP Clients' }
+// ]);
 
 /* -----------------------------------------------------------
   Phone Number Logic
@@ -474,7 +508,7 @@ const hidePopup = () => {
                         <!-- <button v-if="localContact.id" class=" pt-0.5" @click="openTagInput">
                             <PlusBoxIcon class="text-my-teal" />
                         </button> -->
-                        <AddTagButton v-if="isEditing"/>
+                        <AddTagButton v-if="isEditing" :tags="unusedTags" :highlightedContact="highlightedContact" @addedTag="emit('contactUpdated', localContact.value); "/>
                     </div>
                 </div>
 
@@ -505,8 +539,8 @@ const hidePopup = () => {
                               <p class="text-gray-700 font-bold text-sm">Assigned Lists</p>
                               <hr class="my-1 border-gray-300" />
                               <ul>
-                                <li v-for="list in dummyLists" :key="list.name" class="text-gray-600 text-sm">
-                                {{ list.name }}
+                                <li v-for="list in contactLists" :key="list.id" class="text-gray-600 text-sm">
+                                  {{ list.listName }}
                                 </li>
                               </ul>
                             </div>

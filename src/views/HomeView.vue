@@ -124,7 +124,7 @@ onMounted(() => {
           <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted" :tags="userTagList" :lists="lists" @refreshContacts="refreshContacts"/>
       </div>
       <div class="max-w-sm ">
-          <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact" :tags="userTagList"/>
+          <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact" :lists="lists" :tags="userTagList"/>
           <ListsBlock :lists="lists"  @refreshContacts="refreshContacts" />
       </div>
   </div>
