@@ -51,7 +51,7 @@ async function addNewList() {
 ----------------------------------------------------------- */
 const filteredLists = computed(() => {
   // If a filter tag is passed, filter the contacts, otherwise show all
-  console.log('lists', lists.value);
+//   console.log('lists', lists.value);
   return lists.value
 });
 
@@ -64,7 +64,7 @@ const paginatedLists = computed(() => {
     return filteredLists.value.slice(start, end);
 });
 
-console.log('paginatedLists', paginatedLists.value);
+// console.log('paginatedLists', paginatedLists.value);
 
 const totalPages = computed(() => Math.ceil(filteredLists.value.length / listsPerPage)); //replace this with real 
 

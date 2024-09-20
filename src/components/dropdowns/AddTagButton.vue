@@ -17,7 +17,7 @@ const selectedTags = ref([]);
 const searchTerm = ref('');
 const isOpen = ref(false);
 const newTagName = ref('');
-const localContact = ref({ id: 1 }); // Example, replace with actual contact data
+const localContact = ref({ ...props.highlightedContact });
 
 // Toggles the dropdown visibility
 const toggleDropdown = () => {
@@ -44,21 +44,25 @@ const filteredTags = computed(() => {
 
 const addTagToContact = async (tag) => {
   try {
-    // Reference to the tag document in the tags collection
+    if (!tag || !tag.id) {
+      console.error('Invalid tag:', tag);
+      return;
+    }
+
     const tagRef = doc(db, 'tags', tag.id);
 
     // Update the contacts array in the tag document using arrayUnion to add the contact ID
     await updateDoc(tagRef, {
-      contacts: arrayUnion(props.highlightedContact.id) // Add the contact's ID to the tag's contacts array
+      contacts: arrayUnion(props.highlightedContact.id)
     });
 
     console.log(`Tag ${tag.tagName} added to contact ${props.highlightedContact.firstName} in tag document.`);
-    
-    // Optionally update the local state of tags in the contact (if contact document has a tags array)
-    if (!props.highlightedContact.tags) {
-      props.highlightedContact.tags = [];
-    }
-    props.highlightedContact.tags.push(tag.id);
+
+    // Use the function here to update the local state
+    addTagToLocalContact(tag);
+
+    // Emit the event to update the parent as well
+    emit('addedTag', tag);
 
   } catch (error) {
     console.error('Error adding tag to contact in tag document:', error);
@@ -66,31 +70,60 @@ const addTagToContact = async (tag) => {
 };
 
 
+
+
+
+
+
+
+
+
 // Adds a new tag to the list and updates Firestore
 const addNewTag = async () => {
   const tag = newTagName.value.trim();
   if (tag && !props.tags.find(t => t.tagName === tag)) {
     try {
-      // Add the new tag to the Firestore database
+      // Add the new tag to Firestore
       const tagRef = await addDoc(collection(db, 'tags'), {
         tagName: tag,
-        contacts: [props.highlightedContact.id],
+        contacts: [props.highlightedContact.id], // Include the current contact's ID
         dateAdded: serverTimestamp(),
         lastUpdated: serverTimestamp(),
         userEmail: props.highlightedContact.email,
         userId: user.value.uid
       });
+
+      // Create the new tag object
+      const newTag = {
+        id: tagRef.id,
+        tagName: tag,
+        contacts: [props.highlightedContact.id]
+      };
+
       
-      props.tags.push({ id: tagRef.id, tagName: tag, contacts: [] });
+      console.log('Emitting addedTag with:', newTag);
+      emit('addedTag', newTag);
+
+      // Clear the input and close the dropdown
       newTagName.value = '';
       searchTerm.value = '';
       isOpen.value = false;
-      emit('addedTag');
 
     } catch (error) {
       console.error('Error adding tag to Firestore:', error);
     }
   }
+};
+
+
+const addTagToLocalContact = (tag) => {
+  if (!localContact.tags) {
+    localContact.tags = [];
+  }
+  if (!localContact.tags.includes(tag.id)) {
+    localContact.tags.push(tag.id);
+  }
+  console.log('Updated localContact tags:', localContact.tags);
 };
 
 

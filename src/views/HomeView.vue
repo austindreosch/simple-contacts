@@ -4,8 +4,8 @@ import ContactBlock from '@/components/ContactBlock.vue';
 import DetailBlock from '@/components/DetailBlock.vue';
 import ListsBlock from '@/components/ListsBlock.vue';
 import { user } from '@/composables/getUser'; // Ensure the path to getUser.js is correct
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { onMounted, ref, watch } from 'vue';
+import { collection, getDocs, onSnapshot, query, where } from 'firebase/firestore';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 const contacts = ref([]);
 const highlightedContact = ref(null);
@@ -16,43 +16,62 @@ const selectedContacts = ref([]);
 /* -----------------------------------------------------------
 LOAD USER CONTACTS (SENT TO CHILDREN COMPONENTS)
 ----------------------------------------------------------- */
+let contactsUnsubscribe;
+let refreshTimeout;
+
 async function loadContacts() {
+  // Unsubscribe from existing listener if it exists
+  if (contactsUnsubscribe) {
+    contactsUnsubscribe();
+    contactsUnsubscribe = null; // Reset the unsubscribe function
+  }
+
   if (user.value) {
     const q = query(collection(db, 'contacts'), where('userId', '==', user.value.uid));
-    const querySnapshot = await getDocs(q);
-    contacts.value = querySnapshot.docs.map(doc => ({
-      id: doc.id, 
-      ...doc.data()
-    }));
-  } else {
-    console.log('Cannot load contacts. User is not authenticated');
+    contactsUnsubscribe = onSnapshot(q, (querySnapshot) => {
+      console.log('DB Read: Contacts data received. Number of documents:', querySnapshot.size);
+      contacts.value = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    });
   }
 }
+
+
 
 function handleContactHighlighted(contact) {
     highlightedContact.value = contact;
 }
 
 function refreshContacts() {
-    console.log('refreshing contacts', contacts);
+  clearTimeout(refreshTimeout);
+  refreshTimeout = setTimeout(() => {
     loadContacts();
     loadTags();
     loadLists();
+  }, 300); // Adjust the delay as needed
 }
+
 
 
 function clearHighlightedContact() {
     highlightedContact.value = null;9
+    console.log('resetting highlighted contact, refreshing contacts');
+    
     refreshContacts();
 }
 
 watch(user, async (newUser) => {
   if (newUser) {
+    console.log('User authenticated:', newUser);    
     await loadContacts();
     await loadTags();
     await loadLists();
   }
 });
+
+
 
 
 /* -----------------------------------------------------------
@@ -63,11 +82,11 @@ async function loadTags() {
     try {
       const q = query(collection(db, 'tags'), where('userId', '==', user.value.uid));
       const querySnapshot = await getDocs(q);
+      console.log('DB Read: Tags data fetched. Number of documents:', querySnapshot.size);
       userTagList.value = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-      // Ensure that doc.data() includes 'tagName' and 'contacts' fields
     } catch (error) {
       console.error('Error loading tags:', error);
     }
@@ -76,40 +95,32 @@ async function loadTags() {
   }
 }
 
+
 async function loadLists() {
-    // console.log('CHECKING USER VALUE', user.value.uid);
-    if (user.value) {
-        const q = query(collection(db, 'lists'), where('userID', '==', user.value.uid));
-        // console.log("USER ID LOADING LISTS" ,user.value.uid)
-        try {
-            const querySnapshot = await getDocs(q);
-            // console.log(querySnapshot.size);
-            const loadedLists = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                loadedLists.push({
-                    id: doc.id,
-                    listName: data.listName,
-                    userID: data.userID,
-                    contacts: data.contacts,
-                    dateAdded: data.dateAdded.toDate().toLocaleString(),
-                    lastUpdated: data.lastUpdated.toDate().toLocaleString()
-                });
-            });
-            lists.value = loadedLists;
-        } catch (error) {
-            console.error('Failed to load lists:', error);
-        }
-    } 
+  if (user.value) {
+    const q = query(collection(db, 'lists'), where('userID', '==', user.value.uid));
+    try {
+      const querySnapshot = await getDocs(q);
+      console.log('DB Read: Lists data fetched. Number of documents:', querySnapshot.size);
+      const loadedLists = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        dateAdded: doc.data().dateAdded.toDate().toLocaleString(),
+        lastUpdated: doc.data().lastUpdated.toDate().toLocaleString()
+      }));
+      lists.value = loadedLists;
+    } catch (error) {
+      console.error('Failed to load lists:', error);
+    }
+  }
 }
 
 
 
-
-
-
-onMounted(() => {
-    refreshContacts();
+onUnmounted(() => {
+  if (contactsUnsubscribe) {
+    contactsUnsubscribe();
+  }
 });
 
 

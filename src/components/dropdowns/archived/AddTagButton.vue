@@ -3,10 +3,11 @@
 <script setup>
 import { db } from '@/assets/firebase';
 import { doc, updateDoc } from "firebase/firestore";
-import { computed, defineProps, defineEmits } from 'vue';
+import { computed, defineEmits, defineProps } from 'vue';
 
 const props = defineProps({ selectedContact: Object });
 const emit = defineEmits(['contactSelected']);
+
 let selectedContact = computed(() => props.selectedContact);
 
 const addTag = async (newTag) => {
@@ -42,6 +43,7 @@ const loadUsedTags = async () => {
         return [];
     }
 };
+
 
 
 </script>

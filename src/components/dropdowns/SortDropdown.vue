@@ -49,12 +49,12 @@ const handleClick = (action) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  console.log('Mounted, event listener added');
+  // console.log('Mounted, event listener added');
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
-  console.log('Unmounted, event listener removed');
+  // console.log('Unmounted, event listener removed');
 });
 
 watchEffect(() => {

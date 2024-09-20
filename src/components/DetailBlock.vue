@@ -26,10 +26,11 @@ let isEditing = ref(false);
 
 const contactTags = computed(() => {
   if (!props.highlightedContact || !props.tags) return [];
-  
+
   // Filter the tags to include only those with the contact's ID in their `contacts` array
   return props.tags.filter(tag => tag.contacts.includes(props.highlightedContact.id));
 });
+
 
 const unusedTags = computed(() => {
   if (!props.highlightedContact || !props.tags) return [];
@@ -39,9 +40,10 @@ const unusedTags = computed(() => {
 });
 
 const contactLists = computed(() => {
-  if (!props.highlightedContact || !props.highlightedContact.id || !props.lists) {
-    // console.log('No highlighted contact or lists available.');
-    return [];
+  console.log('Current highlightedContact:', props.highlightedContact);
+  if (!props.highlightedContact || !props.highlightedContact.id) {
+    console.error('No valid highlighted contact to add tag to.');
+    return;
   }
 
   const filteredLists = props.lists.filter(list => {
@@ -78,12 +80,15 @@ let highlightedContact = computed(() => props.highlightedContact || {
   tags: []
 });
 
-// Will be replaced with actual data from the database
-// const dummyLists = ref([
-//   { name: 'Friends' },
-//   { name: 'Coworkers' },
-//   { name: 'VIP Clients' }
-// ]);
+const formatDate = (timestamp) => {
+  if (!timestamp) return '';
+  
+  // If it's a Firestore Timestamp, convert to JS Date object
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  
+  // Format the date as needed
+  return date.toLocaleString(); // You can customize this format as needed
+};
 
 /* -----------------------------------------------------------
   Phone Number Logic
@@ -142,18 +147,6 @@ const formatPhoneNumber = (phone) => {
 };
 
 
-// When you toggle edit mode, copy the current formatted phone into editablePhone
-function toggleEditMode() {
-  isEditing.value = !isEditing.value;
-
-  if (isEditing.value) {
-    // Populate editablePhone with the raw phone number when entering edit mode
-    editablePhone.value = localContact.phone;
-  } else {
-    // Format and validate the phone number when saving
-    savePhoneNumber();
-  }
-}
 
 function savePhoneNumber() {
   try {
@@ -209,31 +202,66 @@ const deleteContact = async () => {
 
 const saveChanges = async () => {
   if (localContact.value.id) {
-    try {
-      const contactRef = doc(db, 'contacts', localContact.value.id);
-      // Update the document with the values from `localContact`
-      await updateDoc(contactRef, {
-        firstName: localContact.value.firstName,
-        lastName: localContact.value.lastName,
-        email: localContact.value.email,
-        note: localContact.value.note,
-        phone: localContact.value.phone,
-        dateUpdated: serverTimestamp()
-      });
+    if (hasUnsavedChanges.value) {
+      try {
+        const contactRef = doc(db, 'contacts', localContact.value.id);
+        await updateDoc(contactRef, {
+          firstName: localContact.value.firstName,
+          lastName: localContact.value.lastName,
+          email: localContact.value.email,
+          note: localContact.value.note,
+          phone: localContact.value.phone,
+          tags: localContact.value.tags || [],
+          dateUpdated: serverTimestamp(),
+        });
 
-      emit('contactUpdated', localContact.value); 
+        localContact.value.dateUpdated = new Date();
+        emit('contactUpdated', localContact.value);
+        isEditing.value = false;
+        hasUnsavedChanges.value = false;
+      } catch (error) {
+        console.error('Error updating contact:', error);
+      }
+    } else {
+      // No changes were made; simply exit editing mode
       isEditing.value = false;
-      hasUnsavedChanges.value = false;
-    } catch (error) {
-      console.error('Error updating contact:', error);
     }
   }
 };
+
+watch(() => props.highlightedContact, (newVal) => {
+  localContact.value = { ...newVal };
+}, { deep: true });
+
+const handleTagAdded = (newTag) => {
+  // Check if the tag is already in the list
+  const existingTag = contactTags.value.find(tag => tag.id === newTag.id);
+
+  // If the tag is not already in the list, add it
+  if (!existingTag) {
+    contactTags.value.push(newTag);
+  }
+
+  console.log('Updated contactTags:', contactTags.value);
+
+  // Emit the updated contact to sync with Firestore if needed
+  emit('contactUpdated', {
+    ...localContact.value,
+    tags: contactTags.value.map(tag => tag.id) // Map to tag ids if you need to sync the ids in Firestore
+  });
+};
+
+
+
+
+
 
 
 watch(localContact, (newVal, oldVal) => {
   hasUnsavedChanges.value = JSON.stringify(newVal) !== JSON.stringify(props.highlightedContact);
 }, { deep: true });
+
+
 
 /* -----------------------------------------------------------
     Modal Logic
@@ -508,7 +536,7 @@ const hidePopup = () => {
                         <!-- <button v-if="localContact.id" class=" pt-0.5" @click="openTagInput">
                             <PlusBoxIcon class="text-my-teal" />
                         </button> -->
-                        <AddTagButton v-if="isEditing" :tags="unusedTags" :highlightedContact="highlightedContact" @addedTag="emit('contactUpdated', localContact.value); "/>
+                        <AddTagButton v-if="isEditing" :tags="unusedTags" :highlightedContact="highlightedContact" @addedTag="handleTagAdded"/>
                     </div>
                 </div>
 
@@ -516,7 +544,7 @@ const hidePopup = () => {
                 <div class="flex items-center justify-between">
                     <div class="text-2xs text-left ml-2 text-gray-400">
                         <p v-if="localContact.dateUpdated" class="">Last Updated:</p>
-                        <p v-if="localContact.dateUpdated" class="">{{ new Date(localContact.dateUpdated).toLocaleString() }}</p>
+                        <p v-if="localContact.dateUpdated" class="">{{ formatDate(localContact.dateUpdated) }}</p>
 
                     </div>
                     <div class="flex space-x-2">
