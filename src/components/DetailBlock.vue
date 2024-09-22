@@ -62,7 +62,7 @@ const handleTagAdded = (newTag) => {
 const contactLists = computed(() => {
   // console.log('Current highlightedContact:', props.highlightedContact);
   if (!props.highlightedContact || !props.highlightedContact.id) {
-    console.error('No valid highlighted contact to add tag to.');
+    console.log('No valid highlighted contact.');
     return;
   }
 

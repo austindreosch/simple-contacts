@@ -21,6 +21,15 @@ const lists = computed(() => {
   return Array.isArray(props.lists) ? props.lists : props.lists.value;
 });
 
+const filteredLists = computed(() => {
+  // If a filter tag is passed, filter the contacts, otherwise show all
+//   console.log('lists', lists.value);
+  return lists.value
+});
+
+// 
+//this needs a revamp
+// 
 function refreshPage() {
   emit('refeshContacts');
 }
@@ -46,14 +55,28 @@ async function addNewList() {
 }
 
 
+
+/* -----------------------------------------------------------
+  VIEW SWITCHING
+----------------------------------------------------------- */
+const showListDetails = ref(false); // Toggle between list view and detail view
+const selectedList = ref(null); // Store the selected list for detail view
+
+
+
+function selectList(list) {
+  selectedList.value = list;
+  showListDetails.value = true; // Switch to detail view
+}
+
+function backToListView() {
+  showListDetails.value = false;
+  selectedList.value = null;
+}
+
 /* -----------------------------------------------------------
     PAGINATION
 ----------------------------------------------------------- */
-const filteredLists = computed(() => {
-  // If a filter tag is passed, filter the contacts, otherwise show all
-//   console.log('lists', lists.value);
-  return lists.value
-});
 
 const currentListPage = ref(1);
 const listsPerPage = 5;
@@ -63,8 +86,6 @@ const paginatedLists = computed(() => {
     const end = start + listsPerPage;
     return filteredLists.value.slice(start, end);
 });
-
-// console.log('paginatedLists', paginatedLists.value);
 
 const totalPages = computed(() => Math.ceil(filteredLists.value.length / listsPerPage)); //replace this with real 
 
@@ -94,24 +115,12 @@ const formatDate = (dateString) => {
     return `${month}/${day}/${year}`;
 };
 
-const predefinedColors = ['#50b6a8', '#f44336', '#ffeb3b', '#2196f3', '#9c27b0', '#ff9800', '#795548'];
-const newListColor = ref(predefinedColors[0]);
-const showColorDropdown = ref(false);
-function selectColor(color) {
-    newListColor.value = color;
-    showColorDropdown.value = false; // Close the dropdown after selection
-}
-
-
 </script>
 
 <template>
     <!-- Details -->
     <div class="flex justify-between items-end my-2">
         <h1 class="text-left text-2xl mt-2">Groups</h1>
-        <!-- <p class="text-xs mb-1 font-bold">SORT BY</p> -->
-
-
         <div>
             <span class="inline-flex rounded-md border bg-white shadow-sm">
                 <button
@@ -123,14 +132,6 @@ function selectColor(color) {
                     New
                     <svg class="mt-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" :fill="showNewListForm ? 'white' : '#666666'" ><path d="M144-396v-72h288v72H144Zm0-150v-72h432v72H144Zm0-150v-72h432v72H144Zm492 456v-156H480v-72h156v-156h72v156h156v72H708v156h-72Z"/></svg> 
                 </button>
-
-                <!-- <button
-                class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative border-r border-gray-200"
-                title="View Orders"
-                >
-                Edit
-                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#666666"><path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/></svg>   
-                </button> -->
                 <SortDropdown />
             </span>
         </div>
@@ -152,32 +153,6 @@ function selectColor(color) {
                 placeholder="Enter new group name..."
                 class="flex-grow px-3 py-2 border rounded-md mr-1"
             />
-
-            <!-- Color Selector -->
-            <!-- <div class="relative">
-                <button
-                    @click="showColorDropdown = !showColorDropdown"
-                    class="w-10 h-10 p-0.5 px-1 rounded-md mr-1 cursor-pointer border border-gray-300"
-                    :style="{ backgroundColor: newListColor }"
-                    title="Choose list color"
-                ></button>
-
-                <div v-if="showColorDropdown" class="absolute z-10 mt-2 w-36 p-2 bg-white border border-gray-300 rounded-md shadow-md">
-                    <div class="grid grid-cols-4 gap-2">
-                        <div
-                            v-for="color in predefinedColors"
-                            :key="color"
-                            :style="{ backgroundColor: color }"
-                            @click="selectColor(color)"
-                            :class="{
-                            'border-4 border-black': newListColor === color,
-                            'cursor-pointer w-8 h-8 rounded-md': true
-                            }"
-                            title="Choose list color"
-                        ></div>
-                    </div>
-                </div>
-            </div> -->
 
             <button
                 @click="addNewList"
