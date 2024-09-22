@@ -6,7 +6,7 @@ import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
 import { deleteDoc, doc, serverTimestamp, updateDoc, } from "firebase/firestore";
 import { list } from 'firebase/storage';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import { computed, defineEmits, defineProps, ref, watch } from 'vue';
+import { computed, defineEmits, defineProps, reactive, ref, watch } from 'vue';
 
 const props = defineProps({ 
   highlightedContact: Object,
@@ -23,21 +23,40 @@ let isEditing = ref(false);
 /* -----------------------------------------------------------
   PULLING IN DATA FROM PROPS
 ----------------------------------------------------------- */
+const localTags = ref([...props.tags]);
+
+const addTagToLocalTags = (newTag) => {
+  if (!localTags.value.some(tag => tag.id === newTag.id)) {
+    localTags.value.push(newTag);
+    console.log('Tag added to localTags:', newTag);
+  } else {
+    console.log('Tag already exists in localTags:', newTag);
+  }
+};
+
 
 const contactTags = computed(() => {
-  if (!props.highlightedContact || !props.tags) return [];
-
-  // Filter the tags to include only those with the contact's ID in their `contacts` array
-  return props.tags.filter(tag => tag.contacts.includes(props.highlightedContact.id));
+  if (!props.highlightedContact || !localTags.value.length) return [];
+  return localTags.value.filter(tag => tag.contacts.includes(props.highlightedContact.id));
 });
 
 
 const unusedTags = computed(() => {
-  if (!props.highlightedContact || !props.tags) return [];
-  
-  // Filter the tags to exclude those with the contact's ID in their `contacts` array
-  return props.tags.filter(tag => !tag.contacts.includes(props.highlightedContact.id));
+  if (!props.highlightedContact || !localTags.value.length) return [];
+  return localTags.value.filter(tag => !tag.contacts.includes(props.highlightedContact.id));
 });
+
+watch(() => props.tags, (newTags) => {
+  localTags.value = [...newTags];
+});
+
+
+
+const handleTagAdded = (newTag) => {
+  console.log('Updating localTags:', localTags.value);
+  addTagToLocalTags(newTag); // This should add the tag to localTags correctly.
+};
+
 
 const contactLists = computed(() => {
   console.log('Current highlightedContact:', props.highlightedContact);
@@ -89,6 +108,16 @@ const formatDate = (timestamp) => {
   // Format the date as needed
   return date.toLocaleString(); // You can customize this format as needed
 };
+
+watch(localTags, (newTags) => {
+  console.log('localTags updated:', newTags);
+}, { deep: true });
+
+
+//see when highlightedContact changes
+watch(() => highlightedContact, (newVal) => {
+  console.log('highlightedContact updated in parent:', newVal);
+}, { deep: true });
 
 /* -----------------------------------------------------------
   Phone Number Logic
@@ -147,22 +176,21 @@ const formatPhoneNumber = (phone) => {
 };
 
 
-
-function savePhoneNumber() {
-  try {
-    const parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(editablePhone.value, 'US'); // Set default country if necessary
-    if (phoneUtil.isValidNumber(parsedPhoneNumber)) {
-      // Save the formatted phone number back to localContact
-      localContact.phone = phoneUtil.format(parsedPhoneNumber, PhoneNumberFormat.INTERNATIONAL);
-      isEditing.value = false; // Exit edit mode
-    } else {
-      alert("Invalid phone number!");
-    }
-  } catch (error) {
-    console.error("Failed to parse phone number:", error);
-    alert("Invalid phone number!");
-  }
-}
+// function savePhoneNumber() {
+//   try {
+//     const parsedPhoneNumber = phoneUtil.parseAndKeepRawInput(editablePhone.value, 'US'); // Set default country if necessary
+//     if (phoneUtil.isValidNumber(parsedPhoneNumber)) {
+//       // Save the formatted phone number back to localContact
+//       localContact.phone = phoneUtil.format(parsedPhoneNumber, PhoneNumberFormat.INTERNATIONAL);
+//       isEditing.value = false; // Exit edit mode
+//     } else {
+//       alert("Invalid phone number!");
+//     }
+//   } catch (error) {
+//     console.error("Failed to parse phone number:", error);
+//     alert("Invalid phone number!");
+//   }
+// }
 
 // Computed property to manage the input value
 const phoneInput = computed({
@@ -233,23 +261,6 @@ watch(() => props.highlightedContact, (newVal) => {
   localContact.value = { ...newVal };
 }, { deep: true });
 
-const handleTagAdded = (newTag) => {
-  // Check if the tag is already in the list
-  const existingTag = contactTags.value.find(tag => tag.id === newTag.id);
-
-  // If the tag is not already in the list, add it
-  if (!existingTag) {
-    contactTags.value.push(newTag);
-  }
-
-  console.log('Updated contactTags:', contactTags.value);
-
-  // Emit the updated contact to sync with Firestore if needed
-  emit('contactUpdated', {
-    ...localContact.value,
-    tags: contactTags.value.map(tag => tag.id) // Map to tag ids if you need to sync the ids in Firestore
-  });
-};
 
 
 
@@ -537,6 +548,7 @@ const hidePopup = () => {
                             <PlusBoxIcon class="text-my-teal" />
                         </button> -->
                         <AddTagButton v-if="isEditing" :tags="unusedTags" :highlightedContact="highlightedContact" @addedTag="handleTagAdded"/>
+                        <!-- <AddTagButton  :tags="unusedTags" :highlightedContact="highlightedContact" @addedTag="handleTagAdded"/> -->
                     </div>
                 </div>
 

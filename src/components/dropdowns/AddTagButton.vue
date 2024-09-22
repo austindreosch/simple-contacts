@@ -12,8 +12,6 @@ const props = defineProps({
 
 const emit = defineEmits(['addedTag']);
 
-// const tags = ref(['Marketing', 'Development', 'Design', 'Support', 'Management']); // Example tags
-const selectedTags = ref([]);
 const searchTerm = ref('');
 const isOpen = ref(false);
 const newTagName = ref('');
@@ -32,37 +30,37 @@ const filteredTags = computed(() => {
   return props.tags.filter(tag => tag.tagName.toLowerCase().includes(searchTerm.value.toLowerCase()));
 });
 
-// // Toggles tag selection
-// const toggleTagSelection = (tag) => {
-// if (selectedTags.value.includes(tag)) {
-//     selectedTags.value = selectedTags.value.filter(t => t !== tag);
-// } else {
-//     selectedTags.value.push(tag);
-// }
-// };
 
 
-const addTagToContact = async (tag) => {
+const addExistingTagToContact = async (tag) => {
   try {
+    console.log('addExistingTagToContact function called with tag: ',tag.tagName,  tag);
+
     if (!tag || !tag.id) {
       console.error('Invalid tag:', tag);
       return;
     }
 
+    // console.log('Valid tag:', tag);
+
     const tagRef = doc(db, 'tags', tag.id);
 
-    // Update the contacts array in the tag document using arrayUnion to add the contact ID
     await updateDoc(tagRef, {
       contacts: arrayUnion(props.highlightedContact.id)
     });
 
-    console.log(`Tag ${tag.tagName} added to contact ${props.highlightedContact.firstName} in tag document.`);
+    // console.log(`Tag ${tag.tagName} added to contact ${props.highlightedContact.firstName} in Firestore.`);
 
-    // Use the function here to update the local state
     addTagToLocalContact(tag);
+    // console.log('Local state updated with new tag.');
+    emit('addedTag', {
+      id: tag.id,
+      tagName: tag.tagName,
+      contacts: tag.contacts ? [...tag.contacts, props.highlightedContact.id] : [props.highlightedContact.id]
+    });
+    console.log('emitting addedTag event with:', tag);
 
-    // Emit the event to update the parent as well
-    emit('addedTag', tag);
+    // console.log('Event emitted to parent component.');
 
   } catch (error) {
     console.error('Error adding tag to contact in tag document:', error);
@@ -78,9 +76,13 @@ const addTagToContact = async (tag) => {
 
 
 
+
 // Adds a new tag to the list and updates Firestore
 const addNewTag = async () => {
   const tag = newTagName.value.trim();
+  console.log('Adding new tag:', tag); // Check if the function is called and the tag is not empty
+  console.log(user.value.email);
+  
   if (tag && !props.tags.find(t => t.tagName === tag)) {
     try {
       // Add the new tag to Firestore
@@ -89,7 +91,7 @@ const addNewTag = async () => {
         contacts: [props.highlightedContact.id], // Include the current contact's ID
         dateAdded: serverTimestamp(),
         lastUpdated: serverTimestamp(),
-        userEmail: props.highlightedContact.email,
+        userEmail: user.value.email,
         userId: user.value.uid
       });
 
@@ -100,9 +102,13 @@ const addNewTag = async () => {
         contacts: [props.highlightedContact.id]
       };
 
-      
-      console.log('Emitting addedTag with:', newTag);
-      emit('addedTag', newTag);
+      console.log('emitting addedTag event with:', newTag);
+      emit('addedTag', {
+        id: tagRef.id,
+        tagName: tag,
+        contacts: [props.highlightedContact.id]
+      });
+
 
       // Clear the input and close the dropdown
       newTagName.value = '';
@@ -112,6 +118,8 @@ const addNewTag = async () => {
     } catch (error) {
       console.error('Error adding tag to Firestore:', error);
     }
+  } else {
+    console.log('Tag already exists or is empty.'); // If tag already exists or is empty
   }
 };
 
@@ -123,7 +131,7 @@ const addTagToLocalContact = (tag) => {
   if (!localContact.tags.includes(tag.id)) {
     localContact.tags.push(tag.id);
   }
-  console.log('Updated localContact tags:', localContact.tags);
+  // console.log('Updated localContact tags:', localContact.tags);
 };
 
 
@@ -172,10 +180,10 @@ document.removeEventListener('click', handleClickOutside);
           <div 
             v-for="tag in filteredTags" 
             :key="tag.id" 
-            @click="addTagToContact(tag)" 
+            @click="addExistingTagToContact(tag)" 
             class="cursor-pointer"
           >
-            <button
+            <button type="button"
               class="flex items-center space-x-1 px-2 py-1 rounded bg-my-teal text-white text-sm hover:bg-teal-600"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4">

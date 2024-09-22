@@ -53,7 +53,23 @@ function refreshContacts() {
   }, 300); // Adjust the delay as needed
 }
 
-
+const addTagToContact = (newTag) => {
+  // Check if the tag exists in the tags array
+  const tagIndex = tags.value.findIndex((tag) => tag.id === newTag.id);
+  
+  if (tagIndex !== -1) {
+    // If the contact ID is not already in the contacts array, add it
+    if (!tags.value[tagIndex].contacts.includes(highlightedContact.value.id)) {
+      tags.value[tagIndex].contacts.push(highlightedContact.value.id);
+    }
+  } else {
+    // If the tag doesn't exist, add it to the tags array
+    tags.value.push({
+      ...newTag,
+      contacts: [highlightedContact.value.id]
+    });
+  }
+};
 
 function clearHighlightedContact() {
     highlightedContact.value = null;9
@@ -135,7 +151,7 @@ onUnmounted(() => {
           <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted" :tags="userTagList" :lists="lists" @refreshContacts="refreshContacts"/>
       </div>
       <div class="max-w-sm ">
-          <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact" :lists="lists" :tags="userTagList"/>
+          <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact" @tagAddedToContact="addTagToContact" :lists="lists" :tags="userTagList"/>
           <ListsBlock :lists="lists"  @refreshContacts="refreshContacts" />
       </div>
   </div>
