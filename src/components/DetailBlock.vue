@@ -3,7 +3,7 @@ import { db } from '@/assets/firebase';
 import listIcon from '@/assets/listicon.svg';
 import AddTagButton from '@/components/dropdowns/AddTagButton.vue';
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
-import { deleteDoc, doc, serverTimestamp, updateDoc, } from "firebase/firestore";
+import { arrayRemove, deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { list } from 'firebase/storage';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { computed, defineEmits, defineProps, reactive, ref, watch } from 'vue';
@@ -266,15 +266,53 @@ watch(() => props.highlightedContact, (newVal) => {
 }, { deep: true });
 
 
-
-
-
-
-
-
 watch(localContact, (newVal, oldVal) => {
   hasUnsavedChanges.value = JSON.stringify(newVal) !== JSON.stringify(props.highlightedContact);
 }, { deep: true });
+
+
+
+// REMOVING TAGS LOGIC
+
+const tagToRemove = ref(null);
+const showRemoveTagModal = ref(false);
+
+const confirmTagRemoval = (tag) => {
+  tagToRemove.value = tag;
+  showRemoveTagModal.value = true;
+};
+
+const removeTag = async () => {
+  if (!tagToRemove.value || !tagToRemove.value.id) return;
+
+  try {
+    // Update the tag in Firestore to remove the contact ID
+    const tagRef = doc(db, 'tags', tagToRemove.value.id);
+    await updateDoc(tagRef, {
+      contacts: arrayRemove(props.highlightedContact.id)
+    });
+
+    // Remove the tag from localTags
+    const index = localTags.value.findIndex(tag => tag.id === tagToRemove.value.id);
+    if (index !== -1) {
+      localTags.value.splice(index, 1);
+    }
+
+    // Emit an event to notify parent of the removed tag if needed
+    emit('tagRemovedFromContact', tagToRemove.value);
+
+    showRemoveTagModal.value = false;
+    tagToRemove.value = null;
+
+  } catch (error) {
+    console.error('Error removing tag from contact:', error);
+  }
+};
+
+const cancelTagRemoval = () => {
+  showRemoveTagModal.value = false;
+  tagToRemove.value = null;
+};
 
 
 
@@ -337,6 +375,7 @@ const hidePopup = () => {
 };
 
 
+
 </script>
 
 <template>
@@ -358,6 +397,15 @@ const hidePopup = () => {
         @confirm="handleConfirmDelete"
         @cancel="handleCancelDelete"
         class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
+    />
+
+    <ConfirmationModal
+      v-if="showRemoveTagModal"
+      :show="showRemoveTagModal"
+      title="Remove Tag"
+      :message="`Are you sure you want to remove the tag '${tagToRemove.tagName}' from this contact?`"
+      @confirm="removeTag"
+      @cancel="cancelTagRemoval"
     />
 
     <!-- Details -->
@@ -542,9 +590,28 @@ const hidePopup = () => {
                         <span
                             v-for="(tag, index) in contactTags"
                             :key="tag.id"
-                            class="bg-my-teal text-white px-2 py-1 rounded-md text-sm"
-                            >
+                            class="relative bg-my-teal text-white px-2 py-1 rounded-md text-sm flex items-center"
+                        >
                             {{ tag.tagName }}
+                            <!-- Show the "X" button only when in editing mode -->
+                            <button
+                                v-if="isEditing"
+                                @click="confirmTagRemoval(tag)"
+                                class="ml-1 p-0 w-2.5 h-2.5 flex items-center justify-center bg-white rounded-full hover:bg-gray-200"
+                                title="Remove Tag"
+                              >
+                              <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke-width="2"
+                                  stroke="currentColor"
+                                  class="w-3 h-3 text-my-teal"
+                              >
+                                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="0" />
+                                  <path d="M16 8 L8 16 M8 8 L16 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                              </svg>
+                            </button>
                         </span>
 
                         <!-- Placeholder button to simulate adding new tags -->
