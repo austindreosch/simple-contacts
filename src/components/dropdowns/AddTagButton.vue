@@ -34,33 +34,29 @@ const filteredTags = computed(() => {
 
 const addExistingTagToContact = async (tag) => {
   try {
-    console.log('addExistingTagToContact function called with tag: ',tag.tagName,  tag);
-
     if (!tag || !tag.id) {
       console.error('Invalid tag:', tag);
       return;
     }
-
-    // console.log('Valid tag:', tag);
-
     const tagRef = doc(db, 'tags', tag.id);
 
     await updateDoc(tagRef, {
       contacts: arrayUnion(props.highlightedContact.id)
     });
 
-    // console.log(`Tag ${tag.tagName} added to contact ${props.highlightedContact.firstName} in Firestore.`);
-
-    addTagToLocalContact(tag);
-    // console.log('Local state updated with new tag.');
-    emit('addedTag', {
+    const updatedTag = {
       id: tag.id,
       tagName: tag.tagName,
-      contacts: tag.contacts ? [...tag.contacts, props.highlightedContact.id] : [props.highlightedContact.id]
-    });
-    console.log('emitting addedTag event with:', tag);
+      contacts: tag.contacts ? [...tag.contacts, props.highlightedContact.id] : [props.highlightedContact.id],
+      dateAdded: tag.dateAdded || null, // If dateAdded isn't present, use null
+      lastUpdated: new Date(), // Placeholder for Firestore timestamp
+      userEmail: tag.userEmail || user.value.email,
+      userId: tag.userId || user.value.uid
+    };
 
-    // console.log('Event emitted to parent component.');
+    addTagToLocalContact(updatedTag);
+    emit('addedTag', updatedTag);
+    toggleDropdown();
 
   } catch (error) {
     console.error('Error adding tag to contact in tag document:', error);
@@ -99,15 +95,15 @@ const addNewTag = async () => {
       const newTag = {
         id: tagRef.id,
         tagName: tag,
-        contacts: [props.highlightedContact.id]
+        contacts: [props.highlightedContact.id],
+        dateAdded: new Date(), // Placeholder for the Firestore timestamp
+        lastUpdated: new Date(), // Placeholder for the Firestore timestamp
+        userEmail: user.value.email,
+        userId: user.value.uid
       };
 
-      console.log('emitting addedTag event with:', newTag);
-      emit('addedTag', {
-        id: tagRef.id,
-        tagName: tag,
-        contacts: [props.highlightedContact.id]
-      });
+      // console.log('emitting addedTag event with:', newTag);
+      emit('addedTag', newTag);
 
 
       // Clear the input and close the dropdown

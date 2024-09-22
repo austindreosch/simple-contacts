@@ -30,6 +30,7 @@ const addTagToLocalTags = (newTag) => {
     localTags.value.push(newTag);
     console.log('Tag added to localTags:', newTag);
   } else {
+    localTags.value.push(newTag);
     console.log('Tag already exists in localTags:', newTag);
   }
 };
@@ -53,13 +54,13 @@ watch(() => props.tags, (newTags) => {
 
 
 const handleTagAdded = (newTag) => {
-  console.log('Updating localTags:', localTags.value);
+  console.log('Heard child emit addedTag in DetailBlock :', localTags.value);
   addTagToLocalTags(newTag); // This should add the tag to localTags correctly.
 };
 
 
 const contactLists = computed(() => {
-  console.log('Current highlightedContact:', props.highlightedContact);
+  // console.log('Current highlightedContact:', props.highlightedContact);
   if (!props.highlightedContact || !props.highlightedContact.id) {
     console.error('No valid highlighted contact to add tag to.');
     return;
@@ -109,15 +110,18 @@ const formatDate = (timestamp) => {
   return date.toLocaleString(); // You can customize this format as needed
 };
 
-watch(localTags, (newTags) => {
-  console.log('localTags updated:', newTags);
-}, { deep: true });
+
+// 
+// Watch for changes in localTags
+watch(
+  localTags,
+  (newVal) => {
+    console.log('localTags updated:', newVal);
+  },
+  { deep: true }
+);
 
 
-//see when highlightedContact changes
-watch(() => highlightedContact, (newVal) => {
-  console.log('highlightedContact updated in parent:', newVal);
-}, { deep: true });
 
 /* -----------------------------------------------------------
   Phone Number Logic
@@ -547,7 +551,7 @@ const hidePopup = () => {
                         <!-- <button v-if="localContact.id" class=" pt-0.5" @click="openTagInput">
                             <PlusBoxIcon class="text-my-teal" />
                         </button> -->
-                        <AddTagButton v-if="isEditing" :tags="unusedTags" :highlightedContact="highlightedContact" @addedTag="handleTagAdded"/>
+                        <AddTagButton v-if="isEditing" :tags="unusedTags" :highlightedContact="highlightedContact" @added-tag="handleTagAdded"/>
                         <!-- <AddTagButton  :tags="unusedTags" :highlightedContact="highlightedContact" @addedTag="handleTagAdded"/> -->
                     </div>
                 </div>
