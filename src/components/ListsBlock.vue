@@ -16,6 +16,12 @@ const emit = defineEmits(['refeshContacts']);
 // const lists = ref([]);
 const newListName = ref('');
 const showNewListForm = ref(false);
+const searchTerm = ref('');
+
+const contacts = computed(() => {
+  return Array.isArray(props.contacts) ? props.contacts : [];
+});
+
 
 const lists = computed(() => {
   return Array.isArray(props.lists) ? props.lists : props.lists.value;
@@ -26,6 +32,11 @@ const filteredLists = computed(() => {
 //   console.log('lists', lists.value);
   return lists.value
 });
+
+watch(contacts, (newContacts, oldContacts) => {
+  console.log('Contacts computed property updated:', newContacts);
+}, { immediate: true }); // Immediate true will log the value right away on component mount
+
 
 // 
 //this needs a revamp
@@ -54,6 +65,15 @@ async function addNewList() {
     }
 }
 
+function getContactById(contactId) {
+  return props.contacts.find(contact => contact.id === contactId) || null;
+}
+
+// needs setup
+function removeContactFromList(contact) {
+  console.log('removeContactFromList', contact);
+}
+
 
 
 /* -----------------------------------------------------------
@@ -62,12 +82,15 @@ async function addNewList() {
 const showListDetails = ref(false); // Toggle between list view and detail view
 const selectedList = ref(null); // Store the selected list for detail view
 
-
-
 function selectList(list) {
-  selectedList.value = list;
+  selectedList.value = {
+    ...list,
+    contacts: list.contacts.map(contactId => getContactById(contactId)).filter(contact => contact !== null)
+  };
   showListDetails.value = true; // Switch to detail view
 }
+
+
 
 function backToListView() {
   showListDetails.value = false;
@@ -143,124 +166,174 @@ const formatDate = (dateString) => {
 </div>
 
 
-<div class="bg-white border border-gray-300 rounded-lg shadow-md w-full px-4 pt-4 space-y-2 select-none ">
-    <!-- ///////////////// -->
-    <!-- Add New List Form if showNewListForm (this should be a search bar otherwise?) -->
-    <div v-if="showNewListForm" class="mb-2 flex items-center">
-        <input
-        type="text"
-        v-model="newListName"
-        placeholder="Enter new group name..."
-        class="flex-grow px-3 py-2 border rounded-md mr-1"
-        />
-        <button
-        @click="addNewList"
-        class="bg-my-teal text-white px-3 py-2 rounded-md border border-green-700 hover:bg-my-teal-dark"
+<div class="bg-white border border-gray-300 rounded-lg shadow-md w-full px-3 pt-1 space-y-2 select-none">
+  <!-- ///////////////// -->
+  <!-- Top Section -->
+  <div>
+      <!-- Add New List Form if showNewListForm (this should be a search bar otherwise?) -->
+      <div v-if="showNewListForm" class="pt-3">
+          <div class="mb-2 flex items-center h-10">
+              <input
+              type="text"
+              v-model="newListName"
+              placeholder="Enter new group name..."
+              class="flex-grow px-3 py-2 border rounded-md mr-1"
+              />
+              <button
+              @click="addNewList"
+              class="bg-my-teal text-white px-3 py-2 rounded-md border border-green-700 hover:bg-my-teal-dark"
+              >
+              Add Group
+              </button>
+
+              <div class="flex mb-1">
+                  <hr class="my-2 border-gray-300" />
+              </div>
+          </div>
+          <hr></hr>
+      </div>
+
+      <!-- Normal Search Bar -->
+      <div v-if="!showNewListForm && !showListDetails" class="pt-3">
+          <div class="mb-2 flex items-center h-10">
+              <input
+                  type="text"
+                  v-model="searchTerm"
+                  placeholder="Search groups..."
+                  class="flex-grow px-3 py-2 border rounded-md"
+              />
+          </div>
+          <hr></hr>
+      </div>
+      
+  </div>
+
+  <!-- ///////////////// -->
+  <!-- Block - Lists View -->
+  <div v-if="!showListDetails">
+    <div v-for="list in paginatedLists" :key="list.id" @click="selectList(list)">
+      <div class="relative block rounded-md border-2 border-teal-600 shadow-lg p-2 bg-my-teal cursor-pointer mb-1">
+        <div class="grid grid-cols-20 justify-between items-center h-full px-1 pl-2">
+          <div class="col-span-12 text-left">
+            <h2 class="text-sm font-semibold truncate text-white">{{ list.listName }}</h2>
+          </div>
+          <div class="col-span-4 flex flex-col items-center justify-center ml-2">
+            <p class="text-xs text-white">{{ list.contacts.length }}</p>
+            <p class="text-xs text-white">contacts</p>
+          </div>
+          <div class="col-span-4 text-right">
+            <p class="text-xs text-white">{{ formatDate(list.dateAdded) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ///////////////// -->
+  <!-- Block - Detail View -->
+  <div v-if="showListDetails">
+    <div class="flex justify-between items-center mb-[0.35rem] border bg-my-teal p-2 py-[2.5] px-2.5 rounded-md border-teal-600">
+        <h1 class="text-lg font-semibold text-white mr-[0.7rem] truncate " style="max-width: 200px;" title="{{ selectedList.listName }}">{{ selectedList.listName }}</h1>
+        <div class="flex items-center">
+          <div>
+            <p class="text-white font-bold text-xs mr-3 whitespace-nowrap">{{ selectedList.contacts.length }} CONTACTS</p>
+          </div>
+          <button class="text-sm bg-white px-2 py-0.5 rounded-md" @click="backToListView">Back</button>
+        </div>
+    </div>
+    <hr></hr>
+
+    <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 overflow-y-auto pr-1 pb-1 max-h-[210px]">
+      <div 
+        v-for="(contact, index) in selectedList.contacts" 
+        :key="contact.id" 
+        class="flex justify-between items-center p-2 border rounded-md bg-gray-50 shadow-sm"
+      >
+        <p class="text-sm truncate">{{ contact.firstName }} {{ contact.lastName }}</p>
+        <button 
+          class="ml-2 text-xs text-red-500 hover:text-red-700 focus:outline-none"
+          @click="removeContactFromList(contact)"
         >
-        Add Group
+          <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="w-3 h-3 text-my-teal"
+          >
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="0" />
+              <path d="M16 8 L8 16 M8 8 L16 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
         </button>
-
-        <div class="flex mb-1">
-            <hr class="my-2 border-gray-300" />
-        </div>
+      </div>
     </div>
 
-    <!-- ///////////////// -->
-    <!-- Block - Lists View -->
-    <div v-if="!showListDetails">
-        <!-- List Buttons -->
-        <div v-for="list in paginatedLists" :key="list.id">            
-            <div class="relative block rounded-md border-2  border-teal-600 shadow-lg p-2 bg-my-teal ">
-                <div class="grid grid-cols-20 justify-between items-center h-full px-1 pl-2">
-                    <div class="col-span-12 text-left">
-                        <h2 class="text-sm font-semibold truncate text-white">{{ list.listName }}</h2>
-                    </div>
-                    <div class="col-span-4 flex flex-col items-center justify-center ml-2">
-                        <p class="text-xs text-white">{{ list.contacts.length }}</p>
-                        <p class="text-xs text-white">contacts</p>
-                    </div>
-                    <div class="col-span-4 text-right">
-                        <p class="text-xs text-white">{{ formatDate(list.dateAdded) }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+
+    <hr class="mt-1"></hr>
+    <div class="h-10 text-2xs pt-3 text-gray-400 ">
+      <p class="">Last updated: {{ formatDate(selectedList.lastUpdated) }}</p>
     </div>
 
-    <!-- ///////////////// -->
-    <!-- Block - Detail View -->
-    <div v-if="showListDetails" class="bg-white border border-gray-300 rounded-lg shadow-md w-full px-4 pt-4 space-y-2 select-none">
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-xl font-semibold">{{ selectedList.listName }}</h1>
-            <button class="text-sm bg-gray-200 px-3 py-1 rounded-md" @click="backToListView">Back to Groups</button>
-        </div>
-        <div class="space-y-2">
-            <div v-for="contact in selectedList.contacts" :key="contact.id">
-                <div class="flex justify-between items-center px-2 py-1 border-b">
-                    <p>{{ contact }}</p>
-                    <!-- Add buttons or functionality for removing contacts here -->
-                </div>
-            </div>
-        </div>
-    </div>
+  </div>
 
-    <!-- ///////////////// -->
-    <!-- Pagination Buttons - should this be in a div?-->
-    <ol class="flex justify-center gap-1 text-xs font-medium pt-2 pb-4">
-        <li>
-            <button
-            @click="prevPage"
-            :disabled="currentListPage === 1"
-            class="inline-flex size-8 items-center justify-center rounded border border-gray-2 00 bg-gray-100 text-gray-900 rtl:rotate-180"
-            >
-                <span class="sr-only">Prev Page</span>
-                <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-3 w-3"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                >
-                <path
-                fill-rule="evenodd"
-                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                clip-rule="evenodd"
-                />
-                </svg>
-            </button>
-        </li>
-    
-        <li v-for="page in totalPages" :key="page">
-                <button
-                @click="goToPage(page)"
-                :class="{'block size-8 rounded border border-gray-2 00 bg-gray-100 text-center leading-8 text-gray-900': page !== currentListPage, 'block size-8 rounded border-my-teal bg-my-teal text-center leading-8 text-white': page === currentListPage}"
-                >
-                {{ page }}
-            </button>
-        </li>
-        <li>
-            <button
-            @click="nextPage"
-            :disabled="currentListPage === totalPages"
-            class="inline-flex size-8 items-center justify-center rounded border border-gray-200 bg-gray-100 text-gray-900 rtl:rotate-180"
-            >
-                <span class="sr-only">Next Page</span>
-                <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-3 w-3"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                >
-                <path
-                fill-rule="evenodd"
-                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a 1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                clip-rule="evenodd"
-                />
-                </svg>
-            </button>
-        </li>
-    </ol>
+  <!-- ///////////////// -->
+  <!-- Pagination Buttons - should this be in a div?-->
+  <ol v-if="!showListDetails" class="flex justify-center gap-1 text-xs font-medium pt-2 pb-4">
+      <li>
+          <button
+          @click="prevPage"
+          :disabled="currentListPage === 1"
+          class="inline-flex size-8 items-center justify-center rounded border border-gray-2 00 bg-gray-100 text-gray-900 rtl:rotate-180"
+          >
+              <span class="sr-only">Prev Page</span>
+              <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-3 w-3"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              >
+              <path
+              fill-rule="evenodd"
+              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+              clip-rule="evenodd"
+              />
+              </svg>
+          </button>
+      </li>
+  
+      <li v-for="page in totalPages" :key="page">
+              <button
+              @click="goToPage(page)"
+              :class="{'block size-8 rounded border border-gray-2 00 bg-gray-100 text-center leading-8 text-gray-900': page !== currentListPage, 'block size-8 rounded border-my-teal bg-my-teal text-center leading-8 text-white': page === currentListPage}"
+              >
+              {{ page }}
+          </button>
+      </li>
+      <li>
+          <button
+          @click="nextPage"
+          :disabled="currentListPage === totalPages"
+          class="inline-flex size-8 items-center justify-center rounded border border-gray-200 bg-gray-100 text-gray-900 rtl:rotate-180"
+          >
+              <span class="sr-only">Next Page</span>
+              <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-3 w-3"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              >
+              <path
+              fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a 1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"
+              />
+              </svg>
+          </button>
+      </li>
+  </ol>
 
 </div>
-<!-- Block - Detail View -->
 
 </template>

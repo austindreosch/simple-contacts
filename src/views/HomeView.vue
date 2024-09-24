@@ -146,13 +146,13 @@ onUnmounted(() => {
 
 
 <template>
-  <div class="flex w-full max-w-screen-2xl mt-3">
+  <div class="flex w-full max-w-screen-2xl mt-3 ">
       <div class="flex-grow overflow-y-auto mr-2">
           <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted" :tags="userTagList" :lists="lists" @refreshContacts="refreshContacts"/>
       </div>
-      <div class="max-w-sm ">
+      <div class="max-w-xs ">
           <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact" @tagAddedToContact="addTagToContact" :lists="lists" :tags="userTagList"/>
-          <ListsBlock :lists="lists"  @refreshContacts="refreshContacts" />
+          <ListsBlock :lists="lists" :contacts="contacts" @refreshContacts="refreshContacts" />
       </div>
   </div>
 </template>
