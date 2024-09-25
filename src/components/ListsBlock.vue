@@ -1,6 +1,7 @@
 <script setup>
 import { db } from '@/assets/firebase';
 import SortDropdown from '@/components/dropdowns/SortDropdown.vue';
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
 import { user } from '@/composables/getUser';
 import { addDoc, collection, getDocs, query, serverTimestamp, where } from "firebase/firestore";
 import { computed, defineEmits, onMounted, ref, watch } from 'vue';
@@ -11,12 +12,13 @@ const props = defineProps({
     lists: Array,
 });
 
-const emit = defineEmits(['refeshContacts']);
+const emit = defineEmits(['refreshContacts', 'contactSelected']);
 
 // const lists = ref([]);
 const newListName = ref('');
 const showNewListForm = ref(false);
 const searchTerm = ref('');
+const highlightedContact = ref(null);
 
 const contacts = computed(() => {
   return Array.isArray(props.contacts) ? props.contacts : [];
@@ -128,6 +130,61 @@ function goToPage(page) {
 }
 
 /* -----------------------------------------------------------
+  CONTACT HIGHLIGHT/DELETION FROM LIST
+----------------------------------------------------------- */
+const showDeleteModal = ref(false);
+const contactToDelete = ref(null);
+
+function selectContact(contact) {
+  if (highlightedContact.value && highlightedContact.value.id === contact.id) {
+    highlightedContact.value = null; // Unhighlight if already selected
+  } else {
+    highlightedContact.value = contact; // Set the clicked contact as highlighted
+  }
+  emit('contactSelected', highlightedContact.value);
+  // console.log('contact selected:', highlightedContact.value);
+}
+
+
+function confirmDeletion(contact) {
+  contactToDelete.value = contact;
+  showDeleteModal.value = true;
+}
+
+function handleDeleteConfirmed() {
+  removeContactFromList(contactToDelete.value);
+  showDeleteModal.value = false;
+}
+
+function cancelDeletion() {
+  showDeleteModal.value = false;
+}
+
+const confirmationMessage = computed(() => {
+  if (contactToDelete.value) {
+    const firstName = contactToDelete.value.firstName || '';
+    const lastName = contactToDelete.value.lastName || '';
+    return `Are you sure you want to remove ${firstName} ${lastName} from the group?`;
+  }
+  return 'Are you sure you want to remove this contact from the group?';
+});
+
+function isContactHighlighted(contact) {
+  return highlightedContact.value && highlightedContact.value.id === contact.id;
+}
+
+
+//debug
+// watch(contactToDelete, (newVal) => {
+//   if (newVal) {
+//     console.log('contactToDelete updated:', newVal);
+//   } else {
+//     console.warn('contactToDelete is not defined!');
+//   }
+// });
+
+
+/* -----------------------------------------------------------
   STYLING
 ----------------------------------------------------------- */
 const formatDate = (dateString) => {
@@ -146,6 +203,17 @@ const formatDate = (dateString) => {
 
 
 <template>
+
+<ConfirmationModal
+  v-if="showDeleteModal"
+  :show="showDeleteModal"
+  @confirm="handleDeleteConfirmed"
+  @cancel="cancelDeletion"
+  title="Confirm Deletion"
+  :message="confirmationMessage"
+  confirmButtonColor="bg-red-500 text-white"
+/>
+
 <!-- Title/Buttons -->
 <div class="flex justify-between items-end my-2">
     <h1 class="text-left text-2xl mt-2">Groups</h1>
@@ -247,12 +315,17 @@ const formatDate = (dateString) => {
       <div 
         v-for="(contact, index) in selectedList.contacts" 
         :key="contact.id" 
-        class="flex justify-between items-center p-2 border rounded-md bg-gray-50 shadow-sm"
+        class="flex justify-between items-center p-1.5 border rounded-md shadow-sm cursor-pointer"
+        :class="{
+          'bg-gray-50': !isContactHighlighted(contact), // Default background for non-highlighted
+          'bg-blue-100': isContactHighlighted(contact)  // Highlighted background
+        }"
+        @click="selectContact(contact)" 
       >
-        <p class="text-sm truncate">{{ contact.firstName }} {{ contact.lastName }}</p>
+        <p class="text-xs truncate">{{ contact.firstName }} {{ contact.lastName }}</p>
         <button 
-          class="ml-2 text-xs text-red-500 hover:text-red-700 focus:outline-none"
-          @click="removeContactFromList(contact)"
+          class="ml-1 text-xs text-red-500 hover:text-red-700 focus:outline-none"
+          @click.stop="confirmDeletion(contact)"
         >
           <svg
               xmlns="http://www.w3.org/2000/svg"

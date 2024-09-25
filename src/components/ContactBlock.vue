@@ -7,9 +7,10 @@ import ListDropdown from '@/components/dropdowns/ListDropdown.vue';
 import TagFilterDropdown from '@/components/dropdowns/TagFilterDropdown.vue';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import { computed, defineEmits, defineProps, ref, watchEffect } from 'vue';
+import { computed, defineEmits, defineProps, ref, watch, watchEffect } from 'vue';
 
 const props = defineProps({
+    highlightedContact: Object,
     filterTag: String,
     contacts: Array,
     tags: Array,
@@ -37,6 +38,10 @@ const refreshContacts = () => {
   emit('refreshContacts');
   console.log('refreshing contacts real hard');
 }; 
+
+watch(() => props.highlightedContact, (newVal) => {
+  highlightedContactId.value = newVal ? newVal.id : null;
+});
 
 /* -----------------------------------------------------------
   TAGS FILTERING LOGIC

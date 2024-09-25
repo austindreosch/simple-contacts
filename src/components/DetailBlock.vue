@@ -415,15 +415,14 @@ const hidePopup = () => {
         <div class="">
             <span class="inline-flex overflow-hidden rounded-md border bg-white shadow-sm">
                 <button
-                class="flex items-center gap-1 border-e px-3 py-2 text-sm font-medium hover:bg-gray-100 focus:relative"
-                :class="isEditing ? 'bg-my-teal text-white' : ''"
-                @click="startEditing"
-                
+                  class="flex items-center gap-1 border-e px-3 py-2 text-sm font-medium hover:bg-gray-100 focus:relative"
+                  :class="isEditing ? 'bg-my-teal text-white' : ''"
+                  @click="startEditing"
                 >
-                Edit
-                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" :fill="isEditing ? '#ffffff' : '#666666'">
-                    <path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/>
-                </svg>
+                  Edit
+                  <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" :fill="isEditing ? '#ffffff' : '#666666'">
+                      <path d="M144-144v-153l498-498q11-11 24-16t27-5q14 0 27 5t24 16l51 51q11 11 16 24t5 27q0 14-5 27t-16 24L297-144H144Zm549-498 51-51-51-51-51 51 51 51Z"/>
+                  </svg>
                 </button>
             
                 <button @click="confirmDelete" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:relative" title="Delete Contact">
@@ -573,18 +572,19 @@ const hidePopup = () => {
                 </div>
 
                 <!-- Tags -->
-                <div class="relative block rounded-md border-[1.5px] border-gray-300 shadow-sm p-2 overflow-visible" :disabled="!isEditing"
-                :class="{ 'opacity-50': !isEditing }">
+                <div class="relative block rounded-md border-[1.5px] border-gray-300 shadow-sm p-2 overflow-visible h-[5.3rem] max-h-[5.3rem]" 
+                  :disabled="!isEditing"
+                  :class="{ 'opacity-50': !isEditing }">
                     <!-- Edge-positioned label for tags -->
                     <label
-                        v-if="localContact.id"
-                        class="absolute text-xs text-gray-700 font-bold bg-white px-1 -top-2.5 left-2.5 transform translate-y-0"
+                      v-if="localContact.id"
+                      class="absolute text-xs text-gray-700 font-bold bg-white px-1 -top-2.5 left-2.5 transform translate-y-0"
                     >
-                        Tags
+                      Tags
                     </label>
                     
                     <!-- Container for displaying tags and adding new ones -->
-                    <div class="flex flex-wrap items-start gap-2 pt-1 min-h-8">
+                    <div  class="flex flex-wrap items-start gap-2 overflow-y-auto max-h-[4.5rem] flex-grow pr-1 pb-2">
                         <!-- Existing tags displayed as spans -->
                          
                         <span
@@ -614,32 +614,32 @@ const hidePopup = () => {
                             </button>
                         </span>
 
-                        <!-- Placeholder button to simulate adding new tags -->
-                        <!-- <button v-if="localContact.id" class=" pt-0.5" @click="openTagInput">
-                            <PlusBoxIcon class="text-my-teal" />
-                        </button> -->
-                        <AddTagButton v-if="isEditing" :tags="unusedTags" :highlightedContact="highlightedContact" @added-tag="handleTagAdded"/>
-                        <!-- <AddTagButton  :tags="unusedTags" :highlightedContact="highlightedContact" @addedTag="handleTagAdded"/> -->
                     </div>
                 </div>
 
                 <!-- Button, Details -->
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between overflow-y max-h-[5.5rem]">
                     <div class="text-2xs text-left ml-2 text-gray-400">
                         <p v-if="localContact.dateUpdated" class="">Last Updated:</p>
                         <p v-if="localContact.dateUpdated" class="">{{ formatDate(localContact.dateUpdated) }}</p>
 
                     </div>
+
+                    
                     <div class="flex space-x-2">
+                        <div>
+                          <AddTagButton v-if="isEditing" :tags="unusedTags" :highlightedContact="highlightedContact" @added-tag="handleTagAdded"/>
+                        </div>
                         <div class="relative inline-block">
                             <!-- Button with hover events to show/hide the list popup -->
                             <div
-                              class="rounded-md bg-gray-200 text-my-dark px-2 py-2 text-sm font-medium shadow-md"
+                              class="rounded-md bg-gray-200 text-my-dark px-2 py-1.5 text-sm font-medium shadow-md"
                               @mouseover="showPopup"
                               @mouseleave="hidePopup"
                             >
-                              <listIcon class="w-6 h-6" />
+                              <listIcon class="w-5 h-5" />
                             </div>
+
 
                             <!-- Popup for list display -->
                             <div
@@ -657,14 +657,13 @@ const hidePopup = () => {
                             </div>
                         </div>
 
-                        
 
                         <button
                             v-if="isEditing"
                             type="submit"
-                            class="rounded-md bg-my-peach text-my-dark px-5 py-2 text-sm font-medium shadow-md"
+                            class="rounded-md bg-my-peach text-my-dark px-3 py-1 text-sm font-medium shadow-md text-xs"
                         >
-                            Save Changes
+                            Save
                         </button>
                     </div>
 

@@ -38,8 +38,12 @@ async function loadContacts() {
   }
 }
 
+//executes when contact clicked in listblock
+function handleContactHighlightedInListView(contact) {
+  highlightedContact.value = contact;
+}
 
-
+//executes when contact clicked in detailblock
 function handleContactHighlighted(contact) {
     highlightedContact.value = contact;
 }
@@ -72,7 +76,7 @@ const addTagToContact = (newTag) => {
 };
 
 function clearHighlightedContact() {
-    highlightedContact.value = null;9
+    highlightedContact.value = null;
     console.log('resetting highlighted contact, refreshing contacts');
     
     refreshContacts();
@@ -148,11 +152,11 @@ onUnmounted(() => {
 <template>
   <div class="flex w-full max-w-screen-2xl mt-3 ">
       <div class="flex-grow overflow-y-auto mr-2">
-          <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted" :tags="userTagList" :lists="lists" @refreshContacts="refreshContacts"/>
+          <ContactBlock :contacts="contacts" @contactHighlighted="handleContactHighlighted" :highlightedContact="highlightedContact" :tags="userTagList" :lists="lists" @refreshContacts="refreshContacts"/>
       </div>
       <div class="max-w-xs ">
           <DetailBlock :highlightedContact="highlightedContact" @contactUpdated="refreshContacts" @contactDeleted="clearHighlightedContact" @tagAddedToContact="addTagToContact" :lists="lists" :tags="userTagList"/>
-          <ListsBlock :lists="lists" :contacts="contacts" @refreshContacts="refreshContacts" />
+          <ListsBlock :lists="lists" :contacts="contacts" @refreshContacts="refreshContacts" @contactSelected="handleContactHighlightedInListView" :highlightedContact="highlightedContact"/>
       </div>
   </div>
 </template>

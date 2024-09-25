@@ -147,10 +147,10 @@ document.removeEventListener('click', handleClickOutside);
 </script>
 
 <template>
-  <div class="relative">
+  <div class="relative ">
     <!-- Button with "+" icon to toggle dropdown -->
-    <button type="button" v-if="localContact.id" class="pt-0.5" @click="toggleDropdown">
-      <PlusBoxIcon class="text-my-teal" />
+    <button type="button" v-if="localContact.id" class="py-1 px-1.5 bg-my-teal rounded-md" @click="toggleDropdown">
+      <PlusBoxIcon class="" />
     </button>
 
     <!-- Dropdown with filtered tags -->
@@ -161,7 +161,7 @@ document.removeEventListener('click', handleClickOutside);
       style="overflow: visible;"
     >
       <!-- Search bar to filter tags -->
-      <div class="mb-2 flex items-center justify-between">
+      <div class="mb-1.5 flex items-center justify-between">
         <input 
           v-model="searchTerm" 
           type="text" 
@@ -171,7 +171,7 @@ document.removeEventListener('click', handleClickOutside);
       </div>
 
       <!-- Tags List as buttons -->
-      <div class="max-h-40 overflow-y-auto">
+      <div class="max-h-40 overflow-y-auto pt-1.5">
         <div class="flex flex-wrap gap-2">
           <div 
             v-for="tag in filteredTags" 
