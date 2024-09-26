@@ -3,7 +3,7 @@ import { db } from '@/assets/firebase';
 import SortDropdown from '@/components/dropdowns/SortDropdown.vue';
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
 import { user } from '@/composables/getUser';
-import { addDoc, collection, getDocs, query, serverTimestamp, where } from "firebase/firestore";
+import { addDoc, arrayRemove, collection, doc, getDocs, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { computed, defineEmits, onMounted, ref, watch } from 'vue';
 
 
@@ -72,9 +72,34 @@ function getContactById(contactId) {
 }
 
 // needs setup
-function removeContactFromList(contact) {
-  console.log('removeContactFromList', contact);
+async function removeContactFromList(contact) {
+  if (!selectedList.value || !contact) {
+    console.error('No selected list or contact provided');
+    return;
+  }
+
+  try {
+    // Reference to the specific list document in Firestore
+    const listRef = doc(db, 'lists', selectedList.value.id);
+
+    // Update the list by removing the contact ID from the `contacts` array
+    await updateDoc(listRef, {
+      contacts: arrayRemove(contact.id)
+    });
+
+    // Remove the contact locally for immediate UI update
+    selectedList.value.contacts = selectedList.value.contacts.filter(c => c.id !== contact.id);
+
+    console.log(`Contact ${contact.firstName} ${contact.lastName} removed from the list ${selectedList.value.listName}.`);
+
+    // Optionally, you can refresh the page or list details if needed
+    refreshPage(); // Or any other function you use to update the UI
+
+  } catch (error) {
+    console.error('Error removing contact from list:', error);
+  }
 }
+
 
 
 
@@ -144,6 +169,7 @@ function selectContact(contact) {
   emit('contactSelected', highlightedContact.value);
   // console.log('contact selected:', highlightedContact.value);
 }
+
 
 
 function confirmDeletion(contact) {
@@ -274,6 +300,19 @@ const formatDate = (dateString) => {
           <hr></hr>
       </div>
       
+  </div>
+
+  <!-- IF EMPTY -->
+  <div v-if="props.lists.length == 0" class="flex justify-center items-center">
+    <p class="text-gray-500 text-center my-14 mr-1 flex items-center">
+      Click New
+      <span class="ml-0.5">
+        <svg class="mr-1" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" :fill="showNewListForm ? 'white' : '#666666'">
+          <path d="M144-396v-72h288v72H144Zm0-150v-72h432v72H144Zm0-150v-72h432v72H144Zm492 456v-156H480v-72h156v-156h72v156h156v72H708v156h-72Z"/>
+        </svg>
+      </span>
+    to create a new group.
+    </p>
   </div>
 
   <!-- ///////////////// -->
