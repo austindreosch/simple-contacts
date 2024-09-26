@@ -168,6 +168,15 @@ async function deleteAllTags(userId) {
           >
             Settings
           </a>
+          <a
+            href="#"
+            class="block rounded-lg px-4 py-2 text-sm text-gray-300 hover:bg-gray-100 hover:text-gray-400 text-left cursor-not-allowed"
+            disabled
+            role="menuitem"
+            @click.prevent="handleClick('Edit Tags')"
+          >
+            Edit Tags
+          </a>
   
           <a
             href="#"
