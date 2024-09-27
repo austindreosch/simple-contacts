@@ -335,77 +335,194 @@ Papa.parse(file, {
 }
 
 
-
-
-
-
 </script>
 
-<template>
-    <div class="max-w-xl mx-auto justify-center">
-        <div class="flex justify-between items-end pt-12">
-            <!-- <h1 class="text-left text-2xl">Import CSV</h1> -->
-        </div>
-        <div class="bg-white w-full px-6 py-8 h-86 space-y-6 rounded-md h-70 border-2 border-gray-200 shadow-md">
-            <p class="">
-                To import your contacts, press the button below to upload your files in CSV format.
-            </p>
-            <p class="">
-                You can also <a :href="dummyDataCSV" class="text-orange-500">download our sample contacts</a> to test the app.
-            </p>
-            <!-- Question 1 -->
-            <div class="border border-gray-300 p-2 rounded-md bg-gray-200">
-                <div class="bg-blue-400 rounded-md px-4 py-4 mb-3">
-                    <p class="font-bold text-white "> When importing a contact with an email that is already assigned to a contact previously imported, how would you like to manage the import?</p>
-                </div>
-                <div class="flex justify-center space-x-4">
-                    <div>
-                        <input type="radio" id="update" :value=true class="mr-1" v-model="updateDuplicatesFromCSV">
-                        <label for="update" class="">Update contact from import data.</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="replace" :value=false class="mr-1" v-model="updateDuplicatesFromCSV">
-                        <label for="replace" class="">Keep previous contact data.</label>
-                    </div>
-                </div>
-            </div>
-            <!-- Question 2 -->
-            <div class="border border-gray-300 p-2 rounded-md bg-gray-200">
-                <div class="bg-blue-400 rounded-md px-4 py-4 mb-3">
-                    <p class="font-bold text-white "> Would you like to add your imports to a contact list?</p>
-                </div>
-                <div class="flex justify-center space-x-4">
-                    <div>
-                        <label for="addList" class="flex justify-between mr-2">
-                            Add to new list: 
-                            <FullCheckmark class="text-green-500" v-if="!(newListName === '')"/>
-                        </label>
-                        <input type="text" id="addList" v-model="newListName" class="mr-1 border rounded-sm border-gray-500 ">
-                    </div>
-                    <div>
-                        <label for="selectList" class="flex justify-between mr-2">
-                            Add to existing list: 
-                            <FullCheckmark class="text-green-500 fill-current" v-if="!(selectedList === 'Select a list...')"/>
-                        </label>
-                        <select id="selectList" v-model="selectedList" class="mr-1 border rounded-sm border-gray-500">
-                            <option  >Select a list...</option>
-                            <option v-for="list in dummyLists" :key="list.id" :value="list.id">{{ list.name }}</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="col-span-1">
-                <!-- Alert -->
 
-                <!-- Upload Button -->
-                <label for="file-upload" class="relative cursor-pointer flex items-center justify-center px-4 py-2 border border-orange-300 text-sm font-medium rounded-md text-gray-700 bg-orange-200 hover:bg-orange-100" @click="checkImportRule">
-                    <input id="file-upload" name="file-upload" type="file" class="sr-only" :disabled="showAlert" @change="importCSV">
-                    <Upload class="mx-auto text-orange-900"/>
-                </label>
+
+<template>
+    <div class="max-w-2xl mx-auto p-6">
+      <!-- Heading -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Import Contacts</h1>
+        <p class="mt-2 text-gray-600">Upload your contacts in CSV format to get started.</p>
+      </div>
+  
+      <!-- Import Instructions -->
+      <div class="bg-white shadow-md rounded-lg p-6 space-y-6">
+        <p class="text-gray-700">
+          To import your contacts, press the button below to upload your CSV file.
+        </p>
+        <p class="text-gray-700">
+          You can also
+          <a :href="dummyDataCSV" class="text-blue-600 hover:underline">
+            download our sample contacts
+          </a>
+          to test the app.
+        </p>
+  
+        <!-- Question 1 -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+          <div class="flex items-center mb-4">
+            <div class="bg-blue-500 text-white rounded-full p-2 mr-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+              </svg>
             </div>
+            <p class="text-lg font-semibold text-gray-800">
+              How would you like to handle duplicate emails?
+            </p>
+          </div>
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input
+                type="radio"
+                :value="true"
+                v-model="updateDuplicatesFromCSV"
+                class="form-radio text-blue-600"
+              />
+              <span class="ml-2 text-gray-700">Update existing contacts with import data.</span>
+            </label>
+            <label class="flex items-center">
+              <input
+                type="radio"
+                :value="false"
+                v-model="updateDuplicatesFromCSV"
+                class="form-radio text-blue-600"
+              />
+              <span class="ml-2 text-gray-700">Keep existing contact data.</span>
+            </label>
+          </div>
         </div>
-        <div v-if="showAlert" class="alert alert-danger bg-red-400 p-3 my-4 rounded text-white text-lg">
-            Please choose an import rule before uploading.
+  
+        <!-- Question 2 -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+          <div class="flex items-center mb-4">
+            <div class="bg-blue-500 text-white rounded-full p-2 mr-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </div>
+            <p class="text-lg font-semibold text-gray-800">
+              Would you like to add your imports to a contact list?
+            </p>
+          </div>
+          <div class="space-y-4">
+            <!-- Add to New List -->
+            <div>
+              <label for="addList" class="block text-sm font-medium text-gray-700">
+                Add to new list
+              </label>
+              <div class="mt-1 flex items-center">
+                <input
+                  type="text"
+                  id="addList"
+                  v-model="newListName"
+                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter new list name"
+                />
+                <svg
+                  v-if="newListName"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-green-500 ml-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+  
+            <!-- Add to Existing List -->
+            <div>
+              <label for="selectList" class="block text-sm font-medium text-gray-700">
+                Add to existing list
+              </label>
+              <div class="mt-1 flex items-center">
+                <select
+                  id="selectList"
+                  v-model="selectedList"
+                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option>Select a list...</option>
+                  <option
+                    v-for="list in dummyLists"
+                    :key="list.id"
+                    :value="list.id"
+                  >
+                    {{ list.name }}
+                  </option>
+                </select>
+                <svg
+                  v-if="selectedList !== 'Select a list...'"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-green-500 ml-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
+  
+        <!-- Upload Button -->
+        <div class="text-center">
+          <label
+            for="file-upload"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 cursor-pointer"
+            @click="checkImportRule"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5 10l7-7m0 0l7 7M12 3v18" />
+            </svg>
+            Upload CSV File
+            <input
+              id="file-upload"
+              name="file-upload"
+              type="file"
+              class="sr-only"
+              :disabled="showAlert"
+              @change="importCSV"
+            />
+          </label>
+        </div>
+      </div>
+  
+      <!-- Alert -->
+      <div
+        v-if="showAlert"
+        class="mt-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4"
+        role="alert"
+      >
+        <p class="font-bold">Import Rule Required</p>
+        <p>Please choose how to handle duplicates before uploading.</p>
+      </div>
     </div>
-</template>
+  </template>
+  

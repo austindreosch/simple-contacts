@@ -34,7 +34,7 @@ getUser();
           <nav aria-label="Global" class="hidden md:block">
             <ul class="flex items-center gap-4 text-sm">
               <li>
-                <router-link class="text-white transition hover:text-gray-500/75"to="/"> Home </router-link>
+                <router-link class="text-white transition hover:text-gray-500/75"to="/landing"> Home </router-link>
               </li>
               <li>
                 <router-link class="text-white transition hover:text-gray-500/75"to="/about"> About </router-link>

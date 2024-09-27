@@ -21,6 +21,15 @@ const registerCredentials = reactive({
   lastName: '',
 });
 
+const showPassword = ref({
+  login: false,
+  register: false,
+});
+
+const togglePasswordVisibility = (form) => {
+  showPassword.value[form] = !showPassword.value[form];
+};
+
 const onSubmitLogin = async () => {
   console.log('Login submitted with credentials:', credentials);
   if (!credentials.email || !credentials.password) {
@@ -56,75 +65,130 @@ const onSubmitRegister = async () => {
 </script>
 
 <template>
+  <div class="max-w-md mx-auto p-6">
+    <!-- Tabs for Login and Register -->
+    <div class="flex justify-center mb-6">
+      <button
+        @click="register = false"
+        :class="[
+          'w-1/2 py-2 text-center font-semibold border-b-2',
+          !register ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-800',
+        ]"
+      >
+        <!-- Login Icon -->
+        <svg class="inline-block h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M3 3h12a2 2 0 012 2v4h-2V5H3v10h12v-4h2v4a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2z" />
+          <path d="M12 9l4-4m0 0l-4-4m4 4H6" />
+        </svg>
+        Login
+      </button>
+      <button
+        @click="register = true"
+        :class="[
+          'w-1/2 py-2 text-center font-semibold border-b-2',
+          register ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-800',
+        ]"
+      >
+        <!-- Register Icon -->
+        <svg class="inline-block h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 5a2 2 0 100-4 2 2 0 000 4zM4 8a4 4 0 014-4h4a4 4 0 014 4v8a2 2 0 01-2 2h-1v-4H7v4H6a2 2 0 01-2-2V8z" />
+        </svg>
+        Register
+      </button>
+    </div>
+
+    <!-- Forms -->
     <div>
-      <!-- LOGIN VS REGISTER TABS -->
-      <div>
-        <div class="flex justify-center overflow-x-auto overflow-y-hidden border-b border-gray-200 whitespace-nowrap">
-          <button class="inline-flex items-center h-10 px-2 py-2 -mb-px text-center bg-transparent border-b-2 border-transparent sm:px-4 whitespace-nowrap cursor-base focus:outline-none hover:border-gray-400 hover:text-gray-400"
-                  :class="{'text-blue-600 border-blue-600 hover:text-blue-500' : !register}"
-                  @click="register = false">
-            <LoginIcon />
-            <span class="mx-1 text-sm sm:text-base">Login</span>
-          </button>
-          <button class="inline-flex items-center h-10 px-2 py-2 -mb-px text-center bg-transparent border-b-2 border-transparent sm:px-4 whitespace-nowrap cursor-base focus:outline-none hover:border-gray-400 hover:text-gray-400"
-                  :class="{'text-blue-600 border-blue-600 hover:text-blue-500' : register}"
-                  @click="register = true">
-            <RegisterIcon />
-            <span class="mx-1 text-sm sm:text-base">Register</span>
-          </button>
-        </div>
+      <!-- Login Form -->
+      <div v-if="!register">
+        <form @submit.prevent="onSubmitLogin" class="bg-white shadow-md rounded-lg p-6 space-y-4">
+          <div>
+            <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              v-model="credentials.email"
+              type="email"
+              id="login-email"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="Enter your email"
+            />
+          </div>
+          <div>
+            <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+            <input
+              v-model="credentials.password"
+              type="password"
+              id="login-password"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="Enter your password"
+            />
+          </div>
+          <div class="flex items-center justify-between">
+            <button
+              type="submit"
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Sign In
+            </button>
+          </div>
+          <div class="text-center mt-4">
+            <a href="#" class="text-sm text-blue-600 hover:underline">Forgot Password?</a>
+          </div>
+        </form>
       </div>
-  
-      <!-- FORMS -->
-      <div class="mt-2">
-        <!-- LOGIN FORM -->
-        <div v-if="!register">
-          <form @submit.prevent="onSubmitLogin" class="w-full max-w-lg bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <div class="mb-6">
-              <label class="w-full block text-gray-700 text-xs font-bold mb-2" for="email">EMAIL</label>
-              <input v-model="credentials.email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="text" placeholder="Enter an email">
-            </div>
-            <div class="mb-6">
-              <label class="block text-gray-700 text-xs font-bold mb-2" for="password">PASSWORD</label>
-              <input v-model="credentials.password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" placeholder="Enter a password">
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">Sign In</button>
-              <a class="inline-block align-baseline font-bold text-xs text-blue-500 hover:text-blue-800" href="#">Forgot Password?</a>
-            </div>
-          </form>
-        </div>
-  
-        <!-- REGISTER FORM -->
-        <div v-if="register">
-          <form @submit.prevent="onSubmitRegister" class="w-full max-w-lg bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <div class="flex flex-wrap -mx-3 mb-6">
-              <div class="w-full px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-email">Email</label>
-                <input v-model="registerCredentials.email" class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-email" type="email" placeholder="Email">
-              </div>
-            </div>
-            <div class="flex flex-wrap -mx-3 mb-6">
-              <div class="w-full px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-password">Password</label>
-                <input v-model="registerCredentials.password" class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-password" type="password" placeholder="********">
-              </div>
-            </div>
-            <div class="flex flex-wrap -mx-3 mb-6">
-              <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-first-name">First Name</label>
-                <input v-model="registerCredentials.firstName" class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" id="grid-first-name" type="text" placeholder="First Name">
-              </div>
-              <div class="w-full md:w-1/2 px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-last-name">Last Name</label>
-                <input v-model="registerCredentials.lastName" class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-last-name" type="text" placeholder="Last Name">
-              </div>
-            </div>
-            <div class="flex items-center justify-center">
-              <button class="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline" type="submit">Register</button>
-            </div>
-          </form>
-        </div>
+
+      <!-- Register Form -->
+      <div v-else>
+        <form @submit.prevent="onSubmitRegister" class="bg-white shadow-md rounded-lg p-6 space-y-4">
+          <div>
+            <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              v-model="registerCredentials.email"
+              type="email"
+              id="register-email"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="Enter your email"
+            />
+          </div>
+          <div>
+            <label for="register-password" class="block text-sm font-medium text-gray-700">Password</label>
+            <input
+              v-model="registerCredentials.password"
+              type="password"
+              id="register-password"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="Create a password"
+            />
+          </div>
+          <div>
+            <label for="first-name" class="block text-sm font-medium text-gray-700">First Name</label>
+            <input
+              v-model="registerCredentials.firstName"
+              type="text"
+              id="first-name"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="Enter your first name"
+            />
+          </div>
+          <div>
+            <label for="last-name" class="block text-sm font-medium text-gray-700">Last Name</label>
+            <input
+              v-model="registerCredentials.lastName"
+              type="text"
+              id="last-name"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="Enter your last name"
+            />
+          </div>
+          <div class="flex items-center justify-between">
+            <button
+              type="submit"
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Register
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-  </template>
+  </div>
+</template>
