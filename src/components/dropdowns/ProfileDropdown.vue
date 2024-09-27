@@ -22,9 +22,13 @@ const handleClick = async (action) => {
   if (action === 'Delete All Contacts') {
     showModal.value = true;
   } else if (action === 'Logout') {
+
+  
     // Implement logout logic here
   } else if (action === 'Settings') {
     // Implement settings logic here
+  } else if (action === 'Edit Tags') {
+    // Implement
   }
 
   dropdownStore.clearOpenDropdown(); // Close the dropdown after an action is clicked

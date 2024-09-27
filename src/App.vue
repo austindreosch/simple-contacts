@@ -39,12 +39,15 @@ getUser();
               <li>
                 <router-link class="text-white transition hover:text-gray-500/75"to="/about"> About </router-link>
               </li>
+              <li>
+                <router-link class="text-white bg-my-dark rounded-md p-2.5 px-6 transition hover:text-gray-500/75"to="/auth"> Login </router-link>
+              </li>
             </ul>
           </nav>
           <!-- buttons -->
 
 
-          <div class="flex items-center gap-2">
+          <div v-if="user" class="flex items-center gap-2">
             <!-- ACTIONS -->
             <div class="sm:flex gap-2">
               <router-link
@@ -67,29 +70,8 @@ getUser();
 
             <!-- LOGIN+REGISTER/PROFILE -->
             <div class="sm:flex">
-              <router-link
-                class="rounded-md bg-my-peach px-5 py-2.5 text-sm font-medium text-my-dark shadow"
-                v-if="user && !user.uid" 
-                to="/auth"
-              >
-                Login
-              </router-link>
-  
-              <div class="hidden sm:flex">
-                <router-link
-                  class="rounded-md bg-gray-100 px-5 py-2.5 text-sm font-medium text-my-dark"
-                  v-if="user && !user.uid" 
-                  to="/auth"
-                >
-                  Register
-                </router-link>
-              </div>
-
-
-
               <!-- NEW PROFILE BUTTON -->
               <ProfileDropdown/>
-
             </div>
 
 
@@ -113,6 +95,7 @@ getUser();
 
 
           </div>
+
         </div>
       </div>
     </div>
