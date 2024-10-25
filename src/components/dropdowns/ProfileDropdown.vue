@@ -6,6 +6,10 @@ import { dropdownStore } from '@/stores/dropdownStore';
 import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
+// Add this import at the top of your script
+import { auth } from '@/assets/firebase';
+import { signOut } from 'firebase/auth';
+
 
 const router = useRouter();
 const userEmail = computed(() => user.value ? user.value.email : null);
@@ -22,6 +26,13 @@ const handleClick = async (action) => {
   if (action === 'Delete All Contacts') {
     showModal.value = true;
   } else if (action === 'Logout') {
+
+    try {
+      await signOut(auth);
+      router.push('/landing'); // Redirect to the login page after logout
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
 
   
     // Implement logout logic here

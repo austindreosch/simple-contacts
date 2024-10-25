@@ -344,7 +344,7 @@ Papa.parse(file, {
       <!-- Heading -->
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800">Import Contacts</h1>
-        <p class="mt-2 text-gray-600">Upload your contacts in CSV format to get started.</p>
+        <!-- <p class="mt-2 text-gray-600">Upload your contacts in CSV format to get started.</p> -->
       </div>
   
       <!-- Import Instructions -->

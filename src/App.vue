@@ -39,7 +39,7 @@ getUser();
               <li>
                 <router-link class="text-white transition hover:text-gray-500/75"to="/about"> About </router-link>
               </li>
-              <li>
+              <li v-if="!user">
                 <router-link class="text-white bg-my-dark rounded-md p-2.5 px-6 transition hover:text-gray-500/75"to="/auth"> Login </router-link>
               </li>
             </ul>
