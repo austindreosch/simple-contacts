@@ -343,8 +343,13 @@ const formatDate = (dateString) => {
         <h1 class="text-lg font-semibold text-white mr-[0.7rem] truncate " style="max-width: 200px;" title="{{ selectedList.listName }}">{{ selectedList.listName }}</h1>
         <div class="flex items-center">
           <div>
-            <p class="text-white font-bold text-xs mr-3 whitespace-nowrap">{{ selectedList.contacts.length }} CONTACTS</p>
+            <p class="text-white font-bold text-2xs mr-2 whitespace-nowrap">{{ selectedList.contacts.length }} CONTACTS</p>
           </div>
+          <button @click="" class="flex items-center gap-1 px-1 py-[2px] mr-1 text-sm font-medium text-gray-700 bg-white rounded-md">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#55555">
+              <path d="M480-336 288-528l51-51 105 105v-342h72v342l105-105 51 51-192 192ZM263.72-192Q234-192 213-213.15T192-264v-72h72v72h432v-72h72v72q0 29.7-21.16 50.85Q725.68-192 695.96-192H263.72Z"/>
+            </svg>
+          </button>
           <button class="text-sm bg-white px-2 py-0.5 rounded-md" @click="backToListView">Back</button>
         </div>
     </div>
