@@ -515,7 +515,7 @@ const hidePopup = () => {
 
                 <!-- Note and Phone -->
                 <div class="grid grid-cols-1 md:grid-cols-10 gap-2">
-                    <div class="md:col-span-6">
+                    <div class="md:col-span-5">
                         <label
                             for="note"
                             class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
@@ -539,7 +539,7 @@ const hidePopup = () => {
                     </div>
 
 
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-5">
                         <label
                         for="phone"
                         class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"

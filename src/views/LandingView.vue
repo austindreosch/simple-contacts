@@ -1,13 +1,9 @@
 <template>
-  <div class="pb-24 overflow-y-auto">
+  <div class="pb-24 overflow-y-auto ">
     <!-- Hero Section -->
-    <div class="relative bg-gray-800">
+    <div class="fixed top-16 left-0 w-full bg-gray-800">
       <div class="absolute inset-0">
-        <img
-          class="w-full h-full object-cover"
-          src="https://source.unsplash.com/1600x900/?contacts,network"
-          alt="Background Image"
-        />
+
         <div class="absolute inset-0 bg-gray-800 opacity-75"></div>
       </div>
       <div class="relative max-w-4xl mx-auto px-6 py-24 text-center">
@@ -27,10 +23,10 @@
     </div>
 
     <!-- Features Section -->
-    <div class="bg-white py-12">
+    <div class=" py-12 pt-[450px] pb-32">
       <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="text-center mb-12">
-          <h2 class="text-3xl font-extrabold text-gray-800">Features</h2>
+          <!-- <h2 class="text-3xl font-extrabold text-gray-800">Features</h2> -->
           <!-- <p class="mt-4 text-lg text-gray-600">
             Everything you need to streamline your contact management.
           </p> -->
